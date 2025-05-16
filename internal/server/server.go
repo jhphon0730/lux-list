@@ -30,6 +30,8 @@ func NewServer(Port string, ctx context.Context) Server {
 	engine := gin.Default()
 	engine.Use(gin.Logger())
 
+	registerRoutes(engine)
+
 	// http server 초기화
 	httpSrv := &http.Server{
 		Addr:    ":" + Port,
