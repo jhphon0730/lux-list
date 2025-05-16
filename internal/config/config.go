@@ -14,9 +14,21 @@ type ServerConfig struct {
 	Port string
 }
 
+// 데이버이스의 정보를 구성하는 구조버 (postgresql
+type PostgresConfig struct {
+	DB_HOST     string
+	DB_USER     string
+	DB_PASSWORD string
+	DB_NAME     string
+	DB_PORT     string
+	SSL_MODE    string
+	TIMEZONE    string
+}
+
 // 프로그램의 환경변수 설정을 포함하는 구조체
 type Config struct {
-	Server ServerConfig
+	Server   ServerConfig
+	Database PostgresConfig
 }
 
 // Config 구조체의 인스턴스를 저장하기 위한 변수와 동기화 객체
@@ -36,6 +48,15 @@ func loadConfig() *Config {
 		Server: ServerConfig{
 			Host: getEnv("SERVER_HOST", "localhost"),
 			Port: getEnv("SERVER_PORT", "5000"),
+		},
+		Database: PostgresConfig{
+			DB_HOST:     getEnv("DB_HOST", "localhost"),
+			DB_USER:     getEnv("DB_USER", "postgres"),
+			DB_PASSWORD: getEnv("DB_PASSWORD", "postgrespassword"),
+			DB_NAME:     getEnv("DB_NAME", "postgres"),
+			DB_PORT:     getEnv("DB_PORT", "5432"),
+			SSL_MODE:    getEnv("SSL_MODE", "disable"),
+			TIMEZONE:    getEnv("TIMEZONE", "Asia/Seoul"),
 		},
 	}
 }

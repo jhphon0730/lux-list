@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"lux-list/internal/config"
+	"lux-list/internal/database"
 	"lux-list/internal/server"
 )
 
@@ -17,6 +18,14 @@ func main() {
 
 	// config 파일 로딩 (.env)
 	config := config.GetConfig()
+	if config == nil {
+		log.Fatal("Failed to load config")
+	}
+
+	// 데이터베이스 초기화
+	if err := database.InitDB(); err != nil {
+		log.Fatalf("Database initialization failed: %v", err)
+	}
 
 	// 서버 생성
 	srv := server.NewServer(config.Server.Port, ctx)
