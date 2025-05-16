@@ -6,7 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"lux-list/internal/config"
+
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
@@ -61,6 +65,10 @@ func (s *server) Run() error {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+
+	// sessions 설정
+	session_store := cookie.NewStore([]byte(config.GetConfig().Server.SessionKey))
+	s.Engine.Use(sessions.Sessions("lux-list-auth-session", session_store))
 
 	// OPTIONS 설정
 	s.Engine.OPTIONS("/*path", func(c *gin.Context) {

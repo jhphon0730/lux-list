@@ -10,8 +10,9 @@ import (
 
 // 서버의 정보를 구성하는 구조체
 type ServerConfig struct {
-	Host string
-	Port string
+	Host       string
+	Port       string
+	SessionKey string
 }
 
 // 데이버이스의 정보를 구성하는 구조버 (postgresql
@@ -46,8 +47,9 @@ func loadConfig() *Config {
 
 	return &Config{
 		Server: ServerConfig{
-			Host: getEnv("SERVER_HOST", "localhost"),
-			Port: getEnv("SERVER_PORT", "5000"),
+			Host:       getEnv("SERVER_HOST", "localhost"),
+			Port:       getEnv("SERVER_PORT", "5000"),
+			SessionKey: getEnv("SESSION_KEY", "session-key"),
 		},
 		Database: PostgresConfig{
 			DB_HOST:     getEnv("DB_HOST", "localhost"),
