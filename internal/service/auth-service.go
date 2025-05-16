@@ -14,6 +14,7 @@ type AuthService interface {
 	Login(name string) (*model.User, string, int, error)
 	RegisterAndGenerateJWT(name string) (*model.User, string, int, error)
 	GetUserByName(name string) (*model.User, error)
+	GetUserByID(id int) (*model.User, error)
 }
 
 // authService는 AuthService 인터페이스를 구현하는 구조체
@@ -69,6 +70,15 @@ func (s *authService) RegisterAndGenerateJWT(name string) (*model.User, string, 
 // GetUserByName은 사용자 이름으로 사용자를 조회하는 메서드
 func (s *authService) GetUserByName(name string) (*model.User, error) {
 	user, err := s.authRepository.GetUserByName(name)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// GetUserByID는 사용자 ID로 사용자를 조회하는 메서드
+func (s *authService) GetUserByID(id int) (*model.User, error) {
+	user, err := s.authRepository.GetUserByID(id)
 	if err != nil {
 		return nil, err
 	}

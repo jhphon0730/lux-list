@@ -72,7 +72,7 @@ func (c *authController) Login(ctx *gin.Context) {
 	}
 
 	// 세션에 사용자 정보와 토큰 저장
-	session.Set("user", req.Name)
+	session.Set("user", user.ID)
 	session.Set("access_token", token)
 
 	if err := session.Save(); err != nil {
@@ -93,9 +93,9 @@ func (c *authController) Logout(ctx *gin.Context) {
 
 // profile은 요청 사용자의 프로필 정보를 반환하는 메서드
 func (c *authController) Profile(ctx *gin.Context) {
-	userName, _ := ctx.Get("user")
+	userID, _ := ctx.Get("user")
 
-	user, err := c.authService.GetUserByName(userName.(string))
+	user, err := c.authService.GetUserByID(userID.(int))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

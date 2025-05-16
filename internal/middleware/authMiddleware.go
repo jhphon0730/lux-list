@@ -1,24 +1,34 @@
 package middleware
 
 import (
+	"lux-list/pkg/auth"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
+// AuthMiddleware는 인증 미들웨어를 정의하는 함수
 func AuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
-		userName := session.Get("user")
+		userID := session.Get("user")
 		accessToken := session.Get("access_token")
-		if userName == nil || accessToken == nil {
+		if userID == nil || accessToken == nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인이 필요한 서비스입니다."})
 			ctx.Abort()
 			return
 		}
 
-		ctx.Set("user", userName)
+		// JWT 검증 로직 추가
+		claims, err := auth.ValidateAndParseJWT(accessToken.(string))
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인 세션이 만료되었습니다."})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Set("user", claims.UserID)
 		ctx.Set("access_token", accessToken)
 		ctx.Next()
 	}
