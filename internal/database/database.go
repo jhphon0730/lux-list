@@ -37,14 +37,14 @@ func InitDB() error {
 		return fmt.Errorf("failed to ping db: %w", err)
 	}
 
-	// Find schema.sql relative to this file
+	// 마이그레이션 sql 파일 경로 찾기
 	schemaPath := filepath.Join("internal", "database", "schema.sql")
 	schema, err := ioutil.ReadFile(schemaPath)
 	if err != nil {
 		return fmt.Errorf("failed to read schema.sql: %w", err)
 	}
 
-	// Split and execute each statement (simple split on ';')
+	// 마이그레이션 sql 실행
 	stmts := strings.Split(string(schema), ";")
 	for _, stmt := range stmts {
 		stmt = strings.TrimSpace(stmt)
@@ -53,6 +53,10 @@ func InitDB() error {
 		}
 		_, err := db.Exec(stmt)
 		if err != nil {
+			// "already exists" 에러는 무시
+			if strings.Contains(err.Error(), "already exists") {
+				continue
+			}
 			log.Printf("Migration error: %v\nSQL: %s\n", err, stmt)
 			return fmt.Errorf("migration failed: %w", err)
 		}

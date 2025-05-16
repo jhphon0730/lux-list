@@ -1,4 +1,4 @@
-package database
+package model
 
 type TaskTag struct {
 	TaskID int `db:"task_id"`
