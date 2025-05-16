@@ -32,9 +32,7 @@ type server struct {
 func NewServer(Port string, ctx context.Context) Server {
 	// gin engine 초기화
 	engine := gin.Default()
-	engine.Use(gin.Logger())
-
-	registerRoutes(engine)
+	// engine.Use(gin.Logger())
 
 	// http server 초기화
 	httpSrv := &http.Server{
@@ -68,12 +66,20 @@ func (s *server) Run() error {
 
 	// sessions 설정
 	session_store := cookie.NewStore([]byte(config.GetConfig().Server.SessionKey))
-	s.Engine.Use(sessions.Sessions("lux-list-auth-session", session_store))
+	session_store.Options(sessions.Options{
+		MaxAge:   3600, // 1시간
+		HttpOnly: true,
+		Secure:   false, // 배포 시에는 true로 변경
+	})
+	s.Engine.Use(sessions.Sessions("ss-token", session_store))
 
 	// OPTIONS 설정
 	s.Engine.OPTIONS("/*path", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})
+
+	// 라우트 등록
+	registerRoutes(s.Engine)
 
 	// 서버 실행
 	if err := s.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

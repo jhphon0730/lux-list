@@ -1,15 +1,19 @@
 package service
 
 import (
-	"lux-list/internal/repository"
 	"net/http"
+
+	"lux-list/internal/model"
+	"lux-list/internal/repository"
+	"lux-list/pkg/auth"
 )
 
 // AuthService는 사용자 인증 관련 메서드를 정의하는 인터페이스
 type AuthService interface {
 	ExistUser(name string) (bool, error)
-	Login(name string) (string, int, error)
-	RegisterAndGenerateJWT(name string) (string, int, error)
+	Login(name string) (*model.User, string, int, error)
+	RegisterAndGenerateJWT(name string) (*model.User, string, int, error)
+	GetUserByName(name string) (*model.User, error)
 }
 
 // authService는 AuthService 인터페이스를 구현하는 구조체
@@ -34,21 +38,39 @@ func (s *authService) ExistUser(name string) (bool, error) {
 }
 
 // Login은 JWT 토큰 발급을 위해 사용자 로그인 요청을 처리하는 메서드
-func (s *authService) Login(name string) (string, int, error) {
+func (s *authService) Login(name string) (*model.User, string, int, error) {
 	user, err := s.authRepository.GetUserByName(name)
 	if err != nil {
-		return "", http.StatusBadRequest, err
+		return nil, "", http.StatusBadRequest, err
 	}
 
-	// TODO : JWT 토큰 생성 로직 추가
+	token, err := auth.GenerateJWT(user.ID)
+	if err != nil {
+		return nil, "", http.StatusInternalServerError, err
+	}
+
+	return user, token, http.StatusOK, nil
 }
 
 // RegisterAndGenerateJWT는 새로운 사용자를 생성하고 JWT 토큰을 발급하는 메서드
-func (s *authService) RegisterAndGenerateJWT(name string) (string, int, error) {
+func (s *authService) RegisterAndGenerateJWT(name string) (*model.User, string, int, error) {
 	user, err := s.authRepository.CreateUser(name)
 	if err != nil {
-		return "", http.StatusBadRequest, err
+		return nil, "", http.StatusBadRequest, err
 	}
 
-	// TODO : JWT 토큰 생성 로직 추가
+	token, err := auth.GenerateJWT(user.ID)
+	if err != nil {
+		return nil, "", http.StatusInternalServerError, err
+	}
+	return user, token, http.StatusOK, nil
+}
+
+// GetUserByName은 사용자 이름으로 사용자를 조회하는 메서드
+func (s *authService) GetUserByName(name string) (*model.User, error) {
+	user, err := s.authRepository.GetUserByName(name)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

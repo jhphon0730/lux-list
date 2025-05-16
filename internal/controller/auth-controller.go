@@ -1,9 +1,12 @@
 package controller
 
 import (
-	"lux-list/internal/service"
 	"net/http"
 
+	"lux-list/internal/model"
+	"lux-list/internal/service"
+
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,6 +14,7 @@ import (
 type AuthController interface {
 	Login(c *gin.Context)
 	Logout(c *gin.Context)
+	Profile(c *gin.Context)
 }
 
 // authController는 AuthController 인터페이스를 구현하는 구조체
@@ -21,6 +25,7 @@ type authController struct {
 func RegisterRoutes(router *gin.RouterGroup, authController AuthController) {
 	router.POST("/login", authController.Login)
 	router.GET("/logout", authController.Logout)
+	router.GET("/profile", authController.Profile)
 }
 
 // NewAuthController는 AuthController의 인스턴스를 생성하는 함수
@@ -42,21 +47,65 @@ func (c *authController) Login(ctx *gin.Context) {
 		return
 	}
 
-	is_exist_user, err := c.authService.ExistUser(req.Name)
+	isExistUser, err := c.authService.ExistUser(req.Name)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if !is_exist_user {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "User does not exist"})
-		return
+	session := sessions.Default(ctx)
+	var (
+		user   *model.User
+		token  string
+		status int
+	)
+
+	if isExistUser {
+		user, token, status, err = c.authService.Login(req.Name)
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{"message": "User exists"})
+		user, token, status, err = c.authService.RegisterAndGenerateJWT(req.Name)
 	}
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 세션에 사용자 정보와 토큰 저장
+	session.Set("user", req.Name)
+	session.Set("access_token", token)
+
+	if err := session.Save(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
+		return
+	}
+	ctx.JSON(status, gin.H{"message": "User Logged In", "user": user})
 }
 
 // logout은 사용자 로그아웃 요청을 처리하는 메서드
 func (c *authController) Logout(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"message": "User logged out"})
+	session := sessions.Default(ctx)
+	session.Delete("user")
+	session.Delete("access_token")
+	_ = session.Save()
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "User Logged Out"})
+}
+
+// profile은 요청 사용자의 프로필 정보를 반환하는 메서드
+func (c *authController) Profile(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	userName := session.Get("user")
+	accessToken := session.Get("access_token")
+	if userName == nil || accessToken == nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	user, err := c.authService.GetUserByName(userName.(string))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"user": user})
 }

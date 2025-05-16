@@ -30,6 +30,8 @@ type PostgresConfig struct {
 type Config struct {
 	Server   ServerConfig
 	Database PostgresConfig
+
+	JWTSecret string
 }
 
 // Config 구조체의 인스턴스를 저장하기 위한 변수와 동기화 객체
@@ -60,6 +62,7 @@ func loadConfig() *Config {
 			SSL_MODE:    getEnv("SSL_MODE", "disable"),
 			TIMEZONE:    getEnv("TIMEZONE", "Asia/Seoul"),
 		},
+		JWTSecret: getEnv("JWT_SECRET", "jwt_secret"),
 	}
 }
 

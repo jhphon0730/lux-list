@@ -8,11 +8,15 @@ import (
 	"lux-list/internal/config"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
+var (
+	db_instance *sql.DB
+	once        sync.Once
+)
 
 // 데이터베이스 초기화 함수, 데이터베이스 연결 및 마이그레이션 수행
 func InitDB() error {
@@ -28,12 +32,12 @@ func InitDB() error {
 	)
 
 	var err error
-	db, err = sql.Open("postgres", dsn)
+	db_instance, err = sql.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("failed to open db: %w", err)
 	}
 
-	if err = db.Ping(); err != nil {
+	if err = db_instance.Ping(); err != nil {
 		return fmt.Errorf("failed to ping db: %w", err)
 	}
 
@@ -51,7 +55,7 @@ func InitDB() error {
 		if stmt == "" {
 			continue
 		}
-		_, err := db.Exec(stmt)
+		_, err := db_instance.Exec(stmt)
 		if err != nil {
 			// "already exists" 에러는 무시
 			if strings.Contains(err.Error(), "already exists") {
@@ -67,5 +71,11 @@ func InitDB() error {
 
 // Returns the global DB connection
 func GetDB() *sql.DB {
-	return db
+	once.Do(func() {
+		InitDB()
+		if db_instance == nil {
+			log.Fatal("DB instance is not initialized")
+		}
+	})
+	return db_instance
 }
