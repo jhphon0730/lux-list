@@ -85,8 +85,7 @@ func (c *authController) Login(ctx *gin.Context) {
 // logout은 사용자 로그아웃 요청을 처리하는 메서드
 func (c *authController) Logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
-	session.Delete("user")
-	session.Delete("access_token")
+	session.Clear()
 	_ = session.Save()
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "User Logged Out"})
