@@ -2,13 +2,21 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
+type Server interface {
+	Run() error
+	Shutdown() error
+}
+
 // 서버 정보를 구성하는 구조체
-type Server struct {
+type server struct {
 	Port string
 	Ctx  context.Context
 
@@ -17,22 +25,63 @@ type Server struct {
 }
 
 // 서버 구조체 생성자 함수
-func NewServer(Port string, ctx context.Context) *Server {
+func NewServer(Port string, ctx context.Context) Server {
 	// gin engine 초기화
 	engine := gin.Default()
 	engine.Use(gin.Logger())
 
 	// http server 초기화
-	server := &http.Server{
+	httpSrv := &http.Server{
 		Addr:    ":" + Port,
 		Handler: engine,
 	}
 
-	return &Server{
+	return &server{
 		Port: Port,
 		Ctx:  ctx,
 
 		Engine: engine,
-		Server: server,
+		Server: httpSrv,
 	}
+}
+
+// gin 엔진 설정 및 서버를 실행하는 함수
+func (s *server) Run() error {
+	// CORS 설정
+	s.Engine.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://192.168.0.5:3000", "http://localhost:3000", "*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
+		MaxAge: 12 * time.Hour,
+	}))
+
+	// OPTIONS 설정
+	s.Engine.OPTIONS("/*path", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	// 서버 실행
+	if err := s.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return err
+	}
+
+	return nil
+}
+
+// 서버를 종료하는 함수
+func (s *server) Shutdown() error {
+	log.Println("Shutting down server...")
+	shutdownCtx, cancel := context.WithTimeout(s.Ctx, 5*time.Second)
+	defer cancel()
+
+	if err := s.Server.Shutdown(shutdownCtx); err != nil {
+		return err
+	}
+
+	return nil
 }
