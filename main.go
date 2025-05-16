@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"lux-list/internal/config"
 	"lux-list/internal/server"
 )
 
@@ -14,8 +15,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background()) // 오타 수정
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
+	// config 파일 로딩 (.env)
+	config := config.GetConfig()
+
 	// 서버 생성
-	srv := server.NewServer("5000", ctx)
+	srv := server.NewServer(config.Server.Port, ctx)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
