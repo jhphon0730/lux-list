@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"lux-list/internal/middleware"
 	"lux-list/internal/model"
 	"lux-list/internal/service"
 
@@ -25,7 +26,7 @@ type authController struct {
 func RegisterRoutes(router *gin.RouterGroup, authController AuthController) {
 	router.POST("/login", authController.Login)
 	router.GET("/logout", authController.Logout)
-	router.GET("/profile", authController.Profile)
+	router.GET("/profile", middleware.AuthMiddleware(), authController.Profile)
 }
 
 // NewAuthController는 AuthController의 인스턴스를 생성하는 함수
@@ -93,13 +94,7 @@ func (c *authController) Logout(ctx *gin.Context) {
 
 // profile은 요청 사용자의 프로필 정보를 반환하는 메서드
 func (c *authController) Profile(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-	userName := session.Get("user")
-	accessToken := session.Get("access_token")
-	if userName == nil || accessToken == nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userName, _ := ctx.Get("user")
 
 	user, err := c.authService.GetUserByName(userName.(string))
 	if err != nil {
