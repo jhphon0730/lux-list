@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background()) // 오타 수정
+	// 로그 설정 및 컨텍스트 생성
+	ctx, cancel := context.WithCancel(context.Background())
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	// config 파일 로딩 (.env)
