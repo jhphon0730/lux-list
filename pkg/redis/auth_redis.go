@@ -79,3 +79,14 @@ func DeleteAuthSession(ctx context.Context, key interface{}) error {
 	}
 	return nil
 }
+
+// GetAuthSession은 Redis에서 인증 세션을 가져오는 함수
+func GetAuthSession(ctx context.Context, key interface{}) (string, error) {
+	set_key := authSessionKey + utils.InterfaceToString(key)
+
+	val, err := auth_redis.Get(ctx, set_key).Result()
+	if err != nil {
+		return "", err
+	}
+	return val, nil
+}
