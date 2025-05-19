@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"lux-list/internal/config"
 	"lux-list/pkg/utils"
@@ -12,6 +13,10 @@ import (
 )
 
 type AuthRedisClient = redis.Client
+
+const (
+	authSessionKey = "auth_session:"
+)
 
 var (
 	// auth_redis는 Redis 클라이언트 인스턴스
@@ -47,7 +52,19 @@ func GetAuthRedis(ctx context.Context) (*AuthRedisClient, error) {
 		}
 	})
 	if auth_redis == nil {
-		return nil, errors.New("Redis client is not initialized")
+		return nil, errors.New("redis client is not initialized")
 	}
 	return auth_redis, nil
+}
+
+// SetAuthSession은 Redis에 인증 세션을 저장하는 함수
+func SetAuthSession(ctx context.Context, value interface{}) error {
+	set_key := authSessionKey + utils.InterfaceToString(value)
+
+	// TTL 1시간
+	err := auth_redis.Set(ctx, set_key, value, time.Hour).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }
