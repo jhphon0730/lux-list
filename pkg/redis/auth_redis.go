@@ -58,11 +58,22 @@ func GetAuthRedis(ctx context.Context) (*AuthRedisClient, error) {
 }
 
 // SetAuthSession은 Redis에 인증 세션을 저장하는 함수
-func SetAuthSession(ctx context.Context, value interface{}) error {
-	set_key := authSessionKey + utils.InterfaceToString(value)
+func SetAuthSession(ctx context.Context, key interface{}, value interface{}) error {
+	set_key := authSessionKey + utils.InterfaceToString(key)
 
 	// TTL 1시간
 	err := auth_redis.Set(ctx, set_key, value, time.Hour).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteAuthSession은 Redis에서 인증 세션을 삭제하는 함수
+func DeleteAuthSession(ctx context.Context, key interface{}) error {
+	set_key := authSessionKey + utils.InterfaceToString(key)
+
+	err := auth_redis.Del(ctx, set_key).Err()
 	if err != nil {
 		return err
 	}

@@ -10,6 +10,7 @@ import (
 	"lux-list/internal/config"
 	"lux-list/internal/database"
 	"lux-list/internal/server"
+	"lux-list/pkg/redis"
 )
 
 func main() {
@@ -26,6 +27,11 @@ func main() {
 	// 데이터베이스 초기화
 	if err := database.InitDB(); err != nil {
 		log.Fatalf("Database initialization failed: %v", err)
+	}
+
+	// Redis 초기화
+	if err := redis.InitRedis(ctx); err != nil {
+		log.Fatalf("Redis initialization failed: %v", err)
 	}
 
 	// 서버 생성

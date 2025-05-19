@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"lux-list/internal/middleware"
 	"lux-list/internal/model"
 	"lux-list/internal/service"
+	"lux-list/pkg/redis"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -25,7 +27,7 @@ type authController struct {
 
 func RegisterRoutes(router *gin.RouterGroup, authController AuthController) {
 	router.POST("/login", authController.Login)
-	router.GET("/logout", authController.Logout)
+	router.GET("/logout", middleware.AuthMiddleware(), authController.Logout)
 	router.GET("/profile", middleware.AuthMiddleware(), authController.Profile)
 }
 
@@ -75,6 +77,12 @@ func (c *authController) Login(ctx *gin.Context) {
 	session.Set("user", user.ID)
 	session.Set("access_token", token)
 
+	// Redis에 세션 저장
+	if err := redis.SetAuthSession(ctx, user.ID, token); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session in Redis"})
+		return
+	}
+
 	if err := session.Save(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
 		return
@@ -84,9 +92,16 @@ func (c *authController) Login(ctx *gin.Context) {
 
 // logout은 사용자 로그아웃 요청을 처리하는 메서드
 func (c *authController) Logout(ctx *gin.Context) {
+	userID, _ := ctx.Get("user")
 	session := sessions.Default(ctx)
 	session.Clear()
 	_ = session.Save()
+
+	fmt.Print(userID)
+	if err := redis.DeleteAuthSession(ctx, userID); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session in Redis"})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "User Logged Out"})
 }
