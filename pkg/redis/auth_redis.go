@@ -1,22 +1,27 @@
 package redis
 
 import (
+	"context"
+	"errors"
+	"sync"
+
 	"lux-list/internal/config"
 	"lux-list/pkg/utils"
-	"sync"
 
 	"github.com/go-redis/redis/v8"
 )
 
+type AuthRedisClient = redis.Client
+
 var (
 	// auth_redis는 Redis 클라이언트 인스턴스
-	auth_redis *redis.Client
+	auth_redis *AuthRedisClient
 	// auth_redis_once는 Redis 클라이언트 초기화를 위한 sync.Once 인스턴스
 	auth_redis_once sync.Once
 )
 
 // InitAuthRedis는 Redis 클라이언트를 초기화하고 반환하는 함수
-func InitAuthRedis() *redis.Client {
+func InitAuthRedis(ctx context.Context) (*AuthRedisClient, error) {
 	config := config.GetConfig()
 	auth_redis = redis.NewClient(&redis.Options{
 		Addr:     config.Redis.Address,
@@ -24,16 +29,25 @@ func InitAuthRedis() *redis.Client {
 		DB:       utils.InterfaceToInt(config.Redis.AuthDB),
 	})
 
-	return auth_redis
+	// Ping 메서드를 사용하여 Redis 서버에 연결을 확인
+	_, err := auth_redis.Ping(ctx).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return auth_redis, nil
 }
 
 // GetAuthRedis는 Redis 클라이언트를 반환하는 함수
-func GetAuthRedis() *redis.Client {
+func GetAuthRedis(ctx context.Context) (*AuthRedisClient, error) {
 	// auth_redis_once는 한 번만 실행되도록 보장하는 sync.Once 인스턴스
 	auth_redis_once.Do(func() {
 		if auth_redis == nil {
-			auth_redis = InitAuthRedis()
+			auth_redis, _ = InitAuthRedis(ctx)
 		}
 	})
-	return auth_redis
+	if auth_redis == nil {
+		return nil, errors.New("Redis client is not initialized")
+	}
+	return auth_redis, nil
 }
