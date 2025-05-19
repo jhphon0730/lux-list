@@ -26,10 +26,18 @@ type PostgresConfig struct {
 	TIMEZONE    string
 }
 
+// Redis의 정보를 구성하는 구조체
+type RedisConfig struct {
+	Address  string
+	Password string
+	AuthDB   string
+}
+
 // 프로그램의 환경변수 설정을 포함하는 구조체
 type Config struct {
 	Server   ServerConfig
 	Database PostgresConfig
+	Redis    RedisConfig
 
 	JWTSecret string
 }
@@ -61,6 +69,11 @@ func loadConfig() *Config {
 			DB_PORT:     getEnv("DB_PORT", "5432"),
 			SSL_MODE:    getEnv("SSL_MODE", "disable"),
 			TIMEZONE:    getEnv("TIMEZONE", "Asia/Seoul"),
+		},
+		Redis: RedisConfig{
+			Address:  getEnv("REDIS_ADDRESS", "localhost:6379"),
+			Password: getEnv("REDIS_PASSWORD", ""),
+			AuthDB:   getEnv("REDIS_AUTH_DB", "0"),
 		},
 		JWTSecret: getEnv("JWT_SECRET", "jwt_secret"),
 	}

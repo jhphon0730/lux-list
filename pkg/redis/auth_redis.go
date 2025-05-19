@@ -1,11 +1,25 @@
 package redis
 
-// AuthRedis는 인증 관련 Redis 작업을 정의하는 인터페이스
-type AuthRedis interface{}
+import (
+	"lux-list/internal/config"
+	"lux-list/pkg/utils"
 
-// authRedis는 Redis를 사용한 인증 관련 작업을 구현하는 구조체
-type authRedis struct{}
+	"github.com/go-redis/redis/v8"
+)
 
-func NewAuthRedis() AuthRedis {
-	return &authRedis{}
+var (
+	// auth_redis는 Redis 클라이언트 인스턴스
+	auth_redis *redis.Client
+)
+
+// InitAuthRedis는 Redis 클라이언트를 초기화하고 반환하는 함수
+func InitAuthRedis() *redis.Client {
+	config := config.GetConfig()
+	auth_redis = redis.NewClient(&redis.Options{
+		Addr:     config.Redis.Address,
+		Password: config.Redis.Password,
+		DB:       utils.InterfaceToInt(config.Redis.AuthDB),
+	})
+
+	return auth_redis
 }
