@@ -8,6 +8,7 @@ import (
 	"lux-list/internal/model"
 	"lux-list/internal/service"
 	"lux-list/pkg/redis"
+	"lux-list/pkg/types"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -81,8 +82,8 @@ func (c *authController) Login(ctx *gin.Context) {
 	}
 
 	// 세션에 사용자 정보와 토큰 저장
-	session.Set(middleware.SESSION_USERID, user.ID)
-	session.Set(middleware.SESSION_ACCESS_TOKEN, token)
+	session.Set(types.SESSION_USERID, user.ID)
+	session.Set(types.SESSION_ACCESS_TOKEN, token)
 
 	// Redis에 세션 저장
 	if err := redis.SetAuthSession(ctx, user.ID, token); err != nil {
@@ -115,7 +116,7 @@ func (c *authController) Logout(ctx *gin.Context) {
 
 // profile은 요청 사용자의 프로필 정보를 반환하는 메서드
 func (c *authController) Profile(ctx *gin.Context) {
-	userID, _ := ctx.Get("user")
+	userID, _ := ctx.Get(types.CONTEXT_USERID)
 
 	user, status, err := c.authService.GetUserByID(userID.(int))
 	if err != nil {
