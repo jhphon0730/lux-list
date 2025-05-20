@@ -27,29 +27,23 @@ func AuthMiddleware() gin.HandlerFunc {
 		session := sessions.Default(ctx)
 		userID := session.Get(SESSION_USERID)
 		accessToken := session.Get(SESSION_ACCESS_TOKEN)
-		if userID == nil || accessToken == nil {
+		if userID == "" || accessToken == "" {
 			clearSession(ctx)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인이 필요한 서비스입니다."})
 			ctx.Abort()
 			return
 		}
 
-		accessTokenStr, ok := accessToken.(string)
-		if !ok {
-			clearSession(ctx)
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "세션 토큰 형식 오류"})
-			ctx.Abort()
-			return
-		}
-
-		if authKey, err := redis.GetAuthSession(ctx, userID); err != nil || authKey == "" || authKey != accessTokenStr {
+		// Redis 세션에 저장 된 access_token과 비교하여 검증 ( 중복 로그인 방지 )
+		if auth_key, err := redis.GetAuthSession(ctx, userID); err != nil || auth_key == "" || auth_key != accessToken {
 			clearSession(ctx)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인 세션이 만료되었습니다."})
 			ctx.Abort()
 			return
 		}
 
-		claims, err := auth.ValidateAndParseJWT(accessTokenStr)
+		// JWT 검증 로직 추가
+		claims, err := auth.ValidateAndParseJWT(accessToken.(string))
 		if err != nil {
 			clearSession(ctx)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인 세션이 만료되었습니다."})
@@ -58,7 +52,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		ctx.Set(SESSION_USERID, claims.UserID)
-		ctx.Set(SESSION_ACCESS_TOKEN, accessTokenStr)
+		ctx.Set(SESSION_ACCESS_TOKEN, accessToken)
 		ctx.Next()
 	}
 }
