@@ -2,7 +2,7 @@ package controller
 
 import (
 	"lux-list/internal/service"
-	"lux-list/pkg/types"
+	"lux-list/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,9 +31,13 @@ func NewTaskController(taskService service.TaskService) TaskController {
 
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
 func (c *taskController) GetTasks(ctx *gin.Context) {
-	userID, _ := ctx.Get(types.CONTEXT_USERID)
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		return
+	}
 
-	tasks, status, err := c.taskService.GetTasks(userID.(int))
+	tasks, status, err := c.taskService.GetTasks(userID)
 	if err != nil {
 		ctx.JSON(status, gin.H{"error": err.Error()})
 		return

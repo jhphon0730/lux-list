@@ -9,6 +9,7 @@ import (
 	"lux-list/internal/service"
 	"lux-list/pkg/redis"
 	"lux-list/pkg/types"
+	"lux-list/pkg/utils"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -100,7 +101,7 @@ func (c *authController) Login(ctx *gin.Context) {
 
 // logout은 사용자 로그아웃 요청을 처리하는 메서드
 func (c *authController) Logout(ctx *gin.Context) {
-	userID, _ := ctx.Get("user")
+	userID, _ := utils.GetUserIDFromContext(ctx)
 	session := sessions.Default(ctx)
 	session.Clear()
 	_ = session.Save()
@@ -116,9 +117,13 @@ func (c *authController) Logout(ctx *gin.Context) {
 
 // profile은 요청 사용자의 프로필 정보를 반환하는 메서드
 func (c *authController) Profile(ctx *gin.Context) {
-	userID, _ := ctx.Get(types.CONTEXT_USERID)
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
 
-	user, status, err := c.authService.GetUserByID(userID.(int))
+	user, status, err := c.authService.GetUserByID(userID)
 	if err != nil {
 		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
