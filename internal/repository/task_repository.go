@@ -5,16 +5,19 @@ import (
 	"lux-list/internal/model"
 )
 
+// TaskRepository는 작업 관련 데이터베이스 작업을 정의하는 인터페이스
 type TaskRepository interface {
 	GetTasks(userID int) ([]model.Task, error)
 	GetTaskByID(taskID int) (*model.Task, error)
 	CreateTask(userID int, task *model.Task) (*model.Task, error)
 }
 
+// taskRepository는 TaskRepository 인터페이스를 구현하는 구조체
 type taskRepository struct {
 	db *sql.DB
 }
 
+// NewTaskRepository는 TaskRepository의 인스턴스를 생성하는 함수
 func NewTaskRepository(db *sql.DB) TaskRepository {
 	return &taskRepository{
 		db: db,

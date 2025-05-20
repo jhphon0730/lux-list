@@ -27,7 +27,7 @@ type authController struct {
 
 // RegisterRoutes는 인증 관련 라우트를 등록하는 함수
 func RegisterAuthRoutes(router *gin.RouterGroup, authController AuthController) {
-	router.POST("/login", authController.Login)
+	router.POST("", authController.Login)
 	router.GET("/logout", middleware.AuthMiddleware(), authController.Logout)
 	router.GET("/profile", middleware.AuthMiddleware(), authController.Profile)
 }
