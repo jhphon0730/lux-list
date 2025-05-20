@@ -1,6 +1,9 @@
 package repository
 
-import "lux-list/internal/model"
+import (
+	"database/sql"
+	"lux-list/internal/model"
+)
 
 type TaskRepository interface {
 	GetTasks(userID int) ([]model.Task, error)
@@ -8,15 +11,34 @@ type TaskRepository interface {
 	CreateTask(userID int, task *model.Task) (*model.Task, error)
 }
 
-type taskRepository struct{}
+type taskRepository struct {
+	db *sql.DB
+}
 
-func NewTaskRepository() TaskRepository {
-	return &taskRepository{}
+func NewTaskRepository(db *sql.DB) TaskRepository {
+	return &taskRepository{
+		db: db,
+	}
 }
 
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
 func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
 	var tasks []model.Task
+	query := "SELECT id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY due_date DESC"
+	rows, err := r.db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var task model.Task
+		if err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
+	}
+
 	return tasks, nil
 }
 
