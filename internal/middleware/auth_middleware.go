@@ -34,16 +34,22 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Redis 세션에 저장 된 access_token과 비교하여 검증 ( 중복 로그인 방지 )
-		if auth_key, err := redis.GetAuthSession(ctx, userID); err != nil || auth_key == "" || auth_key != accessToken {
+		accessTokenStr, ok := accessToken.(string)
+		if !ok {
+			clearSession(ctx)
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "세션 토큰 형식 오류"})
+			ctx.Abort()
+			return
+		}
+
+		if authKey, err := redis.GetAuthSession(ctx, userID); err != nil || authKey == "" || authKey != accessTokenStr {
 			clearSession(ctx)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인 세션이 만료되었습니다."})
 			ctx.Abort()
 			return
 		}
 
-		// JWT 검증 로직 추가
-		claims, err := auth.ValidateAndParseJWT(accessToken.(string))
+		claims, err := auth.ValidateAndParseJWT(accessTokenStr)
 		if err != nil {
 			clearSession(ctx)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인 세션이 만료되었습니다."})
@@ -51,8 +57,8 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set("user", claims.UserID)
-		ctx.Set("access_token", accessToken)
+		ctx.Set(SESSION_USERID, claims.UserID)
+		ctx.Set(SESSION_ACCESS_TOKEN, accessTokenStr)
 		ctx.Next()
 	}
 }
