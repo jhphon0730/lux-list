@@ -81,8 +81,8 @@ func (c *authController) Login(ctx *gin.Context) {
 	}
 
 	// 세션에 사용자 정보와 토큰 저장
-	session.Set("user", user.ID)
-	session.Set("access_token", token)
+	session.Set(middleware.SESSION_USERID, user.ID)
+	session.Set(middleware.SESSION_ACCESS_TOKEN, token)
 
 	// Redis에 세션 저장
 	if err := redis.SetAuthSession(ctx, user.ID, token); err != nil {

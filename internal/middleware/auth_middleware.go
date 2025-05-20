@@ -9,6 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	SESSION_USERID       = "userID"
+	SESSION_ACCESS_TOKEN = "access_token"
+)
+
 // 세션을 지워주는 함수
 func clearSession(ctx *gin.Context) {
 	session := sessions.Default(ctx)
@@ -20,8 +25,8 @@ func clearSession(ctx *gin.Context) {
 func AuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
-		userID := session.Get("user")
-		accessToken := session.Get("access_token")
+		userID := session.Get(SESSION_USERID)
+		accessToken := session.Get(SESSION_ACCESS_TOKEN)
 		if userID == nil || accessToken == nil {
 			clearSession(ctx)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "로그인이 필요한 서비스입니다."})
