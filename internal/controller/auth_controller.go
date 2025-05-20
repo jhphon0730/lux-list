@@ -25,7 +25,8 @@ type authController struct {
 	authService service.AuthService
 }
 
-func RegisterRoutes(router *gin.RouterGroup, authController AuthController) {
+// RegisterRoutes는 인증 관련 라우트를 등록하는 함수
+func RegisterAuthRoutes(router *gin.RouterGroup, authController AuthController) {
 	router.POST("/login", authController.Login)
 	router.GET("/logout", middleware.AuthMiddleware(), authController.Logout)
 	router.GET("/profile", middleware.AuthMiddleware(), authController.Profile)
@@ -47,6 +48,12 @@ func (c *authController) Login(ctx *gin.Context) {
 	var req loginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	// 사용자 이름이 비어있는지 확인
+	if req.Name == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Name is required"})
 		return
 	}
 
@@ -110,9 +117,9 @@ func (c *authController) Logout(ctx *gin.Context) {
 func (c *authController) Profile(ctx *gin.Context) {
 	userID, _ := ctx.Get("user")
 
-	user, err := c.authService.GetUserByID(userID.(int))
+	user, status, err := c.authService.GetUserByID(userID.(int))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
 

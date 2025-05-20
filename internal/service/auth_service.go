@@ -13,8 +13,8 @@ type AuthService interface {
 	ExistUser(name string) (bool, error)
 	Login(name string) (*model.User, string, int, error)
 	RegisterAndGenerateJWT(name string) (*model.User, string, int, error)
-	GetUserByName(name string) (*model.User, error)
-	GetUserByID(id int) (*model.User, error)
+	GetUserByName(name string) (*model.User, int, error)
+	GetUserByID(id int) (*model.User, int, error)
 }
 
 // authService는 AuthService 인터페이스를 구현하는 구조체
@@ -68,19 +68,19 @@ func (s *authService) RegisterAndGenerateJWT(name string) (*model.User, string, 
 }
 
 // GetUserByName은 사용자 이름으로 사용자를 조회하는 메서드
-func (s *authService) GetUserByName(name string) (*model.User, error) {
+func (s *authService) GetUserByName(name string) (*model.User, int, error) {
 	user, err := s.authRepository.GetUserByName(name)
 	if err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
-	return user, nil
+	return user, http.StatusOK, nil
 }
 
 // GetUserByID는 사용자 ID로 사용자를 조회하는 메서드
-func (s *authService) GetUserByID(id int) (*model.User, error) {
+func (s *authService) GetUserByID(id int) (*model.User, int, error) {
 	user, err := s.authRepository.GetUserByID(id)
 	if err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
-	return user, nil
+	return user, http.StatusOK, nil
 }
