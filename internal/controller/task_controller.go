@@ -4,6 +4,7 @@ import (
 	"lux-list/internal/model"
 	"lux-list/internal/service"
 	"lux-list/pkg/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,7 +35,7 @@ func NewTaskController(taskService service.TaskService) TaskController {
 func (c *taskController) GetTasks(ctx *gin.Context) {
 	userID, err := utils.GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
@@ -50,19 +51,19 @@ func (c *taskController) GetTasks(ctx *gin.Context) {
 func (c *taskController) CreateTasks(ctx *gin.Context) {
 	userID, err := utils.GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
 	var req model.CreateTaskRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
 	// 입력 값이 유효한지 검사
 	if err := req.CheckValidCreateTaskRequest(); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
