@@ -43,11 +43,7 @@ func NewAuthController(authService service.AuthService) AuthController {
 
 // login은 사용자 로그인 요청을 처리하는 메서드
 func (c *authController) Login(ctx *gin.Context) {
-	type loginRequest struct {
-		Name string `json:"name"`
-	}
-
-	var req loginRequest
+	var req model.LoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(400, gin.H{"error": "Invalid request"})
 		return

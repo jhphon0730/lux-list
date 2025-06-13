@@ -7,3 +7,7 @@ type User struct {
 	Name      string    `db:"name"`
 	CreatedAt time.Time `db:"created_at"`
 }
+
+type LoginRequest struct {
+	Name string `json:"name"`
+}
