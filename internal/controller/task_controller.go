@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"lux-list/internal/model"
 	"lux-list/internal/service"
 	"lux-list/pkg/utils"
 
@@ -43,4 +44,27 @@ func (c *taskController) GetTasks(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(status, gin.H{"tasks": tasks})
+}
+
+// CreateTasks는 사용자의 작업을 생성하는 메서드
+func (c *taskController) CreateTasks(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(400, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var req model.CreateTaskRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	// 입력 값이 유효한지 검사
+	if err := req.CheckValidCreateTaskRequest(); err != nil {
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	req.ToTask(userID)
 }

@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Task struct {
 	ID          int       `db:"id"`
@@ -21,4 +24,43 @@ type CreateTaskRequest struct {
 	DueDate     time.Time `json:"due_date"`
 	IsCompleted bool      `json:"is_completed"`
 	Priority    string    `json:"priority"` // "low", "medium", "high"
+}
+
+// CheckValidCreateTaskRequest는 CreateTaskRequest의 유효성을 검사하는 메서드
+func (r CreateTaskRequest) CheckValidCreateTaskRequest() error {
+	if r.Title == "" {
+		return errors.New("title is required")
+	}
+	if r.DueDate.IsZero() {
+		return errors.New("due date is required")
+	}
+	if r.Priority != "low" && r.Priority != "medium" && r.Priority != "high" {
+		return errors.New("priority must be 'low', 'medium', or 'high'")
+	}
+	return nil
+}
+
+// ToTask는 CreateTaskRequest를 Task로 변환하는 메서드
+func (r CreateTaskRequest) ToTask(userID int) Task {
+	return Task{
+		UserID:      userID,
+		Title:       r.Title,
+		Description: r.Description,
+		DueDate:     r.DueDate,
+		IsCompleted: r.IsCompleted,
+		Priority:    r.Priority,
+	}
+}
+
+// toTaskTemplate는 CreateTaskRequest를 Task로 변환하는 메서드
+func (r CreateTaskRequest) ToTaskTemplate(templateID int, userID int) Task {
+	return Task{
+		TemplateID:  &templateID,
+		UserID:      userID,
+		Title:       r.Title,
+		Description: r.Description,
+		DueDate:     r.DueDate,
+		IsCompleted: r.IsCompleted,
+		Priority:    r.Priority,
+	}
 }
