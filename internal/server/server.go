@@ -70,6 +70,7 @@ func (s *server) Run() error {
 		MaxAge:   3600, // 1시간
 		HttpOnly: true,
 		Secure:   false, // 배포 시에는 true로 변경
+		Path:     "/api/v1",
 	})
 	s.Engine.Use(sessions.Sessions("ss-token", session_store))
 
