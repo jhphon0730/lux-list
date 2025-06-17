@@ -13,6 +13,7 @@ import (
 type TaskController interface {
 	GetTasks(c *gin.Context)
 	CreateTasks(c *gin.Context)
+	DeleteTasks(c *gin.Context)
 }
 
 // taskController는 TaskController 인터페이스를 구현하는 구조체
@@ -24,6 +25,7 @@ type taskController struct {
 func RegisterTaskRoutes(router *gin.RouterGroup, taskController TaskController) {
 	router.GET("", taskController.GetTasks)
 	router.POST("", taskController.CreateTasks)
+	router.DELETE("/:taskID", taskController.DeleteTasks)
 }
 
 // NewTaskController는 TaskController의 인스턴스를 생성하는 함수
@@ -75,4 +77,9 @@ func (c *taskController) CreateTasks(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(status, gin.H{"task": createdTask})
+}
+
+// DeleteTasks는 사용자의 작업을 삭제하는 메서드
+func (c *taskController) DeleteTasks(ctx *gin.Context) {
+
 }
