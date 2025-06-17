@@ -12,8 +12,10 @@ import (
 // TaskService는 작업 관련 메서드를 정의하는 인터페이스
 type TaskService interface {
 	GetTasks(userID int) ([]model.Task, int, error)
+	GetTasksByTaskID(userID int, taskID int) (*model.Task, int, error)
 	CreateTasks(userID int, task *model.Task) (*model.Task, int, error)
 	DeleteTasks(userID int, taskID int) (int, error)
+	UpdateTasks(userID int, taskID int, task *model.Task) (*model.Task, int, error)
 }
 
 // taskService는 TaskService 인터페이스를 구현하는 구조체
@@ -38,9 +40,22 @@ func (s *taskService) GetTasks(userID int) ([]model.Task, int, error) {
 	return tasks, http.StatusOK, nil
 }
 
+// GetTasksByTaskID는 사용자의 특정 작업을 조회하는 메서드
+func (s *taskService) GetTasksByTaskID(userID int, taskID int) (*model.Task, int, error) {
+	task, err := s.taskRepository.GetTasksByTaskID(userID, taskID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, http.StatusNotFound, errors.New("task not found")
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return task, http.StatusOK, nil
+}
+
 // CreateTasks는 사용자의 작업을 생성하는 매서드
 func (s *taskService) CreateTasks(userID int, task *model.Task) (*model.Task, int, error) {
-	created_task, err := s.taskRepository.CreateTask(userID, task)
+	created_task, err := s.taskRepository.CreateTasks(userID, task)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -50,7 +65,7 @@ func (s *taskService) CreateTasks(userID int, task *model.Task) (*model.Task, in
 
 // DeleteTasks는 사용자의 작업을 삭제하는 메서드
 func (s *taskService) DeleteTasks(userID int, taskID int) (int, error) {
-	err := s.taskRepository.DeleteTask(userID, taskID)
+	err := s.taskRepository.DeleteTasks(userID, taskID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return http.StatusNotFound, errors.New("task not found")
@@ -59,4 +74,14 @@ func (s *taskService) DeleteTasks(userID int, taskID int) (int, error) {
 	}
 
 	return http.StatusNoContent, nil
+}
+
+// UpdateTasks는 사용자의 작업을 업데이트하는 메서드
+func (s *taskService) UpdateTasks(userID int, taskID int, task *model.Task) (*model.Task, int, error) {
+	updatedTask, err := s.taskRepository.UpdateTasks(userID, taskID, task)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return updatedTask, http.StatusOK, nil
 }

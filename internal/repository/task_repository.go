@@ -8,9 +8,10 @@ import (
 // TaskRepository는 작업 관련 데이터베이스 작업을 정의하는 인터페이스
 type TaskRepository interface {
 	GetTasks(userID int) ([]model.Task, error)
-	GetTaskByID(taskID int) (*model.Task, error)
-	CreateTask(userID int, task *model.Task) (*model.Task, error)
-	DeleteTask(userID int, taskID int) error
+	GetTasksByTaskID(userID int, taskID int) (*model.Task, error)
+	CreateTasks(userID int, task *model.Task) (*model.Task, error)
+	DeleteTasks(userID int, taskID int) error
+	UpdateTasks(userID int, taskID int, task *model.Task) (*model.Task, error)
 }
 
 // taskRepository는 TaskRepository 인터페이스를 구현하는 구조체
@@ -46,14 +47,22 @@ func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
 	return tasks, nil
 }
 
-// GetTaskByID는 작업 ID로 작업을 조회하는 메서드
-func (r *taskRepository) GetTaskByID(taskID int) (*model.Task, error) {
+// GetTasksByTaskID는 작업 ID로 작업을 조회하는 메서드
+func (r *taskRepository) GetTasksByTaskID(userID int, taskID int) (*model.Task, error) {
 	var task model.Task
+	query := "SELECT id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE id = $1 AND user_id = $2"
+	row := r.db.QueryRow(query, taskID, userID)
+	if err := row.Scan(&task.ID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, sql.ErrNoRows
+		}
+		return nil, err
+	}
 	return &task, nil
 }
 
-// CreateTask는 새로운 작업을 생성하는 메서드
-func (r *taskRepository) CreateTask(userID int, task *model.Task) (*model.Task, error) {
+// CreateTasks는 새로운 작업을 생성하는 메서드
+func (r *taskRepository) CreateTasks(userID int, task *model.Task) (*model.Task, error) {
 	query := "INSERT INTO tasks (user_id, title, description, due_date, is_completed, priority) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, updated_at"
 	row := r.db.QueryRow(query, userID, task.Title, task.Description, task.DueDate, task.IsCompleted, task.Priority)
 	if err := row.Scan(&task.ID, &task.CreatedAt, &task.UpdatedAt); err != nil {
@@ -65,7 +74,7 @@ func (r *taskRepository) CreateTask(userID int, task *model.Task) (*model.Task, 
 }
 
 // DeleteTask는 작업을 삭제하는 메서드
-func (r *taskRepository) DeleteTask(userID int, taskID int) error {
+func (r *taskRepository) DeleteTasks(userID int, taskID int) error {
 	query := "DELETE FROM tasks WHERE id = $1 AND user_id = $2"
 	result, err := r.db.Exec(query, taskID, userID)
 	if err != nil {
@@ -81,4 +90,15 @@ func (r *taskRepository) DeleteTask(userID int, taskID int) error {
 	}
 
 	return nil
+}
+
+// UpdateTasks는 작업을 업데이트하는 메서드
+func (r *taskRepository) UpdateTasks(userID int, taskID int, task *model.Task) (*model.Task, error) {
+	query := "UPDATE tasks SET title = $1, description = $2, due_date = $3, is_completed = $4, priority = $5, updated_at = NOW() WHERE id = $6 AND user_id = $7 RETURNING updated_at"
+	row := r.db.QueryRow(query, task.Title, task.Description, task.DueDate, task.IsCompleted, task.Priority, taskID, userID)
+	if err := row.Scan(&task.UpdatedAt); err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }

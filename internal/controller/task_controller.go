@@ -14,6 +14,7 @@ type TaskController interface {
 	GetTasks(c *gin.Context)
 	CreateTasks(c *gin.Context)
 	DeleteTasks(c *gin.Context)
+	UpdateTasks(c *gin.Context)
 }
 
 // taskController는 TaskController 인터페이스를 구현하는 구조체
@@ -26,6 +27,7 @@ func RegisterTaskRoutes(router *gin.RouterGroup, taskController TaskController) 
 	router.GET("", taskController.GetTasks)
 	router.POST("", taskController.CreateTasks)
 	router.DELETE("/:taskID", taskController.DeleteTasks)
+	router.PUT("/:taskID", taskController.UpdateTasks)
 }
 
 // NewTaskController는 TaskController의 인스턴스를 생성하는 함수
@@ -100,4 +102,44 @@ func (c *taskController) DeleteTasks(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
+}
+
+// UpdateTasks는 사용자의 작업을 업데이트하는 메서드
+func (c *taskController) UpdateTasks(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	var req model.UpdateTaskRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON format or missing fields"})
+		return
+	}
+
+	// 입력 값이 유효한지 검사
+	if err := req.CheckValidUpdateTaskRequest(); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	findTask, status, err := c.taskService.GetTasksByTaskID(userID, utils.InterfaceToInt(taskID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedTask, status, err := c.taskService.UpdateTasks(userID, utils.InterfaceToInt(taskID), req.ToTask(findTask))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(status, gin.H{"task": updatedTask})
 }
