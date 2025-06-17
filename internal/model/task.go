@@ -43,8 +43,8 @@ func (r CreateTaskRequest) CheckValidCreateTaskRequest() error {
 }
 
 // ToTask는 CreateTaskRequest를 Task로 변환하는 메서드
-func (r CreateTaskRequest) ToTask(userID int) Task {
-	return Task{
+func (r CreateTaskRequest) ToTask(userID int) *Task {
+	return &Task{
 		UserID:      userID,
 		Title:       r.Title,
 		Description: r.Description,
@@ -55,8 +55,8 @@ func (r CreateTaskRequest) ToTask(userID int) Task {
 }
 
 // toTaskTemplate는 CreateTaskRequest를 Task로 변환하는 메서드
-func (r CreateTaskRequest) ToTaskTemplate(templateID int, userID int) Task {
-	return Task{
+func (r CreateTaskRequest) ToTaskTemplate(templateID int, userID int) *Task {
+	return &Task{
 		TemplateID:  &templateID,
 		UserID:      userID,
 		Title:       r.Title,
