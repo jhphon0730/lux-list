@@ -16,6 +16,8 @@ type Task struct {
 	Priority    string    `db:"priority"` // "low", "medium", "high"
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
+
+	Tags []Tag `db:"-" json:"tags"` // 태그는 Task와 N:M 관계를 가짐
 }
 
 type CreateTaskRequest struct {

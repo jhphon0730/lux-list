@@ -9,6 +9,7 @@ import (
 // TaskService는 작업 관련 메서드를 정의하는 인터페이스
 type TaskService interface {
 	GetTasks(userID int) ([]model.Task, int, error)
+	CreateTasks(task model.Task) (model.Task, int, error)
 }
 
 // taskService는 TaskService 인터페이스를 구현하는 구조체
@@ -31,4 +32,10 @@ func (s *taskService) GetTasks(userID int) ([]model.Task, int, error) {
 	}
 
 	return tasks, http.StatusOK, nil
+}
+
+// CreateTasks는 사용자의 작업을 생성하는 매서드
+func (s *taskService) CreateTasks(task model.Task) (model.Task, int, error) {
+
+	return task, http.StatusCreated, nil
 }
