@@ -81,5 +81,22 @@ func (c *taskController) CreateTasks(ctx *gin.Context) {
 
 // DeleteTasks는 사용자의 작업을 삭제하는 메서드
 func (c *taskController) DeleteTasks(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
 
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	if err := c.taskService.DeleteTask(userID, utils.InterfaceToInt(taskID)); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
 }
