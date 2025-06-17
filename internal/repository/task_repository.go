@@ -53,5 +53,12 @@ func (r *taskRepository) GetTaskByID(taskID int) (*model.Task, error) {
 
 // CreateTask는 새로운 작업을 생성하는 메서드
 func (r *taskRepository) CreateTask(userID int, task *model.Task) (*model.Task, error) {
+	query := "INSERT INTO tasks (user_id, title, description, due_date, is_completed, priority) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, updated_at"
+	row := r.db.QueryRow(query, userID, task.Title, task.Description, task.DueDate, task.IsCompleted, task.Priority)
+	if err := row.Scan(&task.ID, &task.CreatedAt, &task.UpdatedAt); err != nil {
+		return nil, err
+	}
+	task.UserID = userID
+
 	return task, nil
 }
