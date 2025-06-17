@@ -12,6 +12,7 @@ import (
 // TaskController는 작업 관련 메서드를 정의하는 인터페이스
 type TaskController interface {
 	GetTasks(c *gin.Context)
+	GetTasksByTaskID(c *gin.Context)
 	CreateTasks(c *gin.Context)
 	DeleteTasks(c *gin.Context)
 	UpdateTasks(c *gin.Context)
@@ -25,6 +26,7 @@ type taskController struct {
 // RegisterTaskRoutes는 작업 관련 라우트를 등록하는 함수
 func RegisterTaskRoutes(router *gin.RouterGroup, taskController TaskController) {
 	router.GET("", taskController.GetTasks)
+	router.GET("/:taskID", taskController.GetTasksByTaskID)
 	router.POST("", taskController.CreateTasks)
 	router.DELETE("/:taskID", taskController.DeleteTasks)
 	router.PUT("/:taskID", taskController.UpdateTasks)
@@ -51,6 +53,28 @@ func (c *taskController) GetTasks(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(status, gin.H{"tasks": tasks})
+}
+
+// GetTasksByTaskID는 사용자의 특정 작업을 조회하는 메서드
+func (c *taskController) GetTasksByTaskID(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	task, status, err := c.taskService.GetTasksByTaskID(userID, utils.InterfaceToInt(taskID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(status, gin.H{"task": task})
 }
 
 // CreateTasks는 사용자의 작업을 생성하는 메서드

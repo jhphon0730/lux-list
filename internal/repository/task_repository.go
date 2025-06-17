@@ -50,9 +50,9 @@ func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
 // GetTasksByTaskID는 작업 ID로 작업을 조회하는 메서드
 func (r *taskRepository) GetTasksByTaskID(userID int, taskID int) (*model.Task, error) {
 	var task model.Task
-	query := "SELECT id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE id = $1 AND user_id = $2"
+	query := "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE id = $1 AND user_id = $2"
 	row := r.db.QueryRow(query, taskID, userID)
-	if err := row.Scan(&task.ID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
+	if err := row.Scan(&task.ID, &task.UserID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
 		}
