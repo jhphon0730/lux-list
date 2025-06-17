@@ -59,7 +59,7 @@ func (c *taskController) CreateTasks(ctx *gin.Context) {
 
 	var req model.CreateTaskRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON format or missing fields"})
 		return
 	}
 
