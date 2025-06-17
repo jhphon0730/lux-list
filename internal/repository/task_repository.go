@@ -29,7 +29,7 @@ func NewTaskRepository(db *sql.DB) TaskRepository {
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
 func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
 	var tasks []model.Task
-	query := "SELECT id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY due_date DESC"
+	query := "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY due_date DESC"
 	rows, err := r.db.Query(query, userID)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
 
 	for rows.Next() {
 		var task model.Task
-		if err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
+		if err := rows.Scan(&task.ID, &task.UserID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, task)
@@ -99,6 +99,7 @@ func (r *taskRepository) UpdateTasks(userID int, taskID int, task *model.Task) (
 	if err := row.Scan(&task.UpdatedAt); err != nil {
 		return nil, err
 	}
+	task.UserID = userID
 
 	return task, nil
 }

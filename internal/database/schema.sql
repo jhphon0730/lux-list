@@ -25,7 +25,7 @@ CREATE TABLE tasks (
     template_id INTEGER REFERENCES task_templates(id) ON DELETE SET NULL,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
-    description TEXT,
+    description TEXT DEFAULT '',
     due_date TIMESTAMP NOT NULL,
     is_completed BOOLEAN DEFAULT FALSE,
     priority VARCHAR(10) CHECK (priority IN ('low', 'medium', 'high')) DEFAULT 'medium',
