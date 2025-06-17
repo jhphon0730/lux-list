@@ -93,8 +93,9 @@ func (c *taskController) DeleteTasks(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.taskService.DeleteTask(userID, utils.InterfaceToInt(taskID)); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	status, err := c.taskService.DeleteTasks(userID, utils.InterfaceToInt(taskID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
 

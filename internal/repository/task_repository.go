@@ -10,6 +10,7 @@ type TaskRepository interface {
 	GetTasks(userID int) ([]model.Task, error)
 	GetTaskByID(taskID int) (*model.Task, error)
 	CreateTask(userID int, task *model.Task) (*model.Task, error)
+	DeleteTask(userID int, taskID int) error
 }
 
 // taskRepository는 TaskRepository 인터페이스를 구현하는 구조체
@@ -61,4 +62,23 @@ func (r *taskRepository) CreateTask(userID int, task *model.Task) (*model.Task, 
 	task.UserID = userID
 
 	return task, nil
+}
+
+// DeleteTask는 작업을 삭제하는 메서드
+func (r *taskRepository) DeleteTask(userID int, taskID int) error {
+	query := "DELETE FROM tasks WHERE id = $1 AND user_id = $2"
+	result, err := r.db.Exec(query, taskID, userID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

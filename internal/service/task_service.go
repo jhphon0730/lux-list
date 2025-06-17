@@ -1,15 +1,19 @@
 package service
 
 import (
+	"database/sql"
+	"errors"
+	"net/http"
+
 	"lux-list/internal/model"
 	"lux-list/internal/repository"
-	"net/http"
 )
 
 // TaskService는 작업 관련 메서드를 정의하는 인터페이스
 type TaskService interface {
 	GetTasks(userID int) ([]model.Task, int, error)
 	CreateTasks(userID int, task *model.Task) (*model.Task, int, error)
+	DeleteTasks(userID int, taskID int) (int, error)
 }
 
 // taskService는 TaskService 인터페이스를 구현하는 구조체
@@ -42,4 +46,17 @@ func (s *taskService) CreateTasks(userID int, task *model.Task) (*model.Task, in
 	}
 
 	return created_task, http.StatusCreated, nil
+}
+
+// DeleteTasks는 사용자의 작업을 삭제하는 메서드
+func (s *taskService) DeleteTasks(userID int, taskID int) (int, error) {
+	err := s.taskRepository.DeleteTask(userID, taskID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return http.StatusNotFound, errors.New("task not found")
+		}
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusNoContent, nil
 }
