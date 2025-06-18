@@ -16,6 +16,8 @@ type TaskController interface {
 	CreateTasks(c *gin.Context)
 	DeleteTasks(c *gin.Context)
 	UpdateTasks(c *gin.Context)
+	CompleteTasks(c *gin.Context)
+	InCompleteTasks(c *gin.Context)
 }
 
 // taskController는 TaskController 인터페이스를 구현하는 구조체
@@ -30,6 +32,8 @@ func RegisterTaskRoutes(router *gin.RouterGroup, taskController TaskController) 
 	router.POST("", taskController.CreateTasks)
 	router.DELETE("/:taskID", taskController.DeleteTasks)
 	router.PUT("/:taskID", taskController.UpdateTasks)
+	router.PATCH("/:taskID/complete", taskController.CompleteTasks)
+	router.PATCH("/:taskID/incomplete", taskController.InCompleteTasks)
 }
 
 // NewTaskController는 TaskController의 인스턴스를 생성하는 함수
@@ -161,6 +165,52 @@ func (c *taskController) UpdateTasks(ctx *gin.Context) {
 	}
 
 	updatedTask, status, err := c.taskService.UpdateTasks(userID, utils.InterfaceToInt(taskID), req.ToTask(findTask))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(status, gin.H{"task": updatedTask})
+}
+
+// CompleteTasks는 사용자의 작업을 완료 상태로 업데이트하는 메서드
+func (c *taskController) CompleteTasks(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	// 사용자의 작업을 완료 상태로 업데이트
+	updatedTask, status, err := c.taskService.CompleteTasks(userID, utils.InterfaceToInt(taskID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(status, gin.H{"task": updatedTask})
+}
+
+// InCompleteTasks는 사용자의 작업을 미완료 상태로 업데이트하는 메서드
+func (c *taskController) InCompleteTasks(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	// 사용자의 작업을 미완료 상태로 업데이트
+	updatedTask, status, err := c.taskService.InCompleteTasks(userID, utils.InterfaceToInt(taskID))
 	if err != nil {
 		ctx.JSON(status, gin.H{"error": err.Error()})
 		return

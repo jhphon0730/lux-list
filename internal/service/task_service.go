@@ -16,6 +16,8 @@ type TaskService interface {
 	CreateTasks(userID int, task *model.Task) (*model.Task, int, error)
 	DeleteTasks(userID int, taskID int) (int, error)
 	UpdateTasks(userID int, taskID int, task *model.Task) (*model.Task, int, error)
+	CompleteTasks(userID int, taskID int) (*model.Task, int, error)
+	InCompleteTasks(userID int, taskID int) (*model.Task, int, error)
 }
 
 // taskService는 TaskService 인터페이스를 구현하는 구조체
@@ -78,6 +80,44 @@ func (s *taskService) DeleteTasks(userID int, taskID int) (int, error) {
 
 // UpdateTasks는 사용자의 작업을 업데이트하는 메서드
 func (s *taskService) UpdateTasks(userID int, taskID int, task *model.Task) (*model.Task, int, error) {
+	updatedTask, err := s.taskRepository.UpdateTasks(userID, taskID, task)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return updatedTask, http.StatusOK, nil
+}
+
+// CompleteTasks는 사용자의 작업을 완료 상태로 변경하는 메서드
+func (s *taskService) CompleteTasks(userID int, taskID int) (*model.Task, int, error) {
+	task, err := s.taskRepository.GetTasksByTaskID(userID, taskID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, http.StatusNotFound, errors.New("task not found")
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+
+	task.IsCompleted = true
+	updatedTask, err := s.taskRepository.UpdateTasks(userID, taskID, task)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return updatedTask, http.StatusOK, nil
+}
+
+// InCompleteTasks는 사용자의 작업을 완료 상태에서 미완료 상태로 변경하는 메서드
+func (s *taskService) InCompleteTasks(userID int, taskID int) (*model.Task, int, error) {
+	task, err := s.taskRepository.GetTasksByTaskID(userID, taskID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, http.StatusNotFound, errors.New("task not found")
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+
+	task.IsCompleted = false
 	updatedTask, err := s.taskRepository.UpdateTasks(userID, taskID, task)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
