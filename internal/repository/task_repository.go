@@ -5,6 +5,14 @@ import (
 	"lux-list/internal/model"
 )
 
+const (
+	FIND_ALL_TASKS_QUERY            = "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY due_date DESC"
+	FIND_ALL_TASKS_QUERY_BY_TASK_ID = "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE id = $1 AND user_id = $2"
+	INSERT_TASKS_QUERY              = "INSERT INTO tasks (user_id, title, description, due_date, is_completed, priority) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, updated_at"
+	DELETE_TASKS_QUERY              = "DELETE FROM tasks WHERE id = $1 AND user_id = $2"
+	UPDATE_TASKS_QUERY              = "UPDATE tasks SET title = $1, description = $2, due_date = $3, is_completed = $4, priority = $5, updated_at = NOW() WHERE id = $6 AND user_id = $7 RETURNING updated_at"
+)
+
 // TaskRepository는 작업 관련 데이터베이스 작업을 정의하는 인터페이스
 type TaskRepository interface {
 	GetTasks(userID int) ([]model.Task, error)
@@ -29,7 +37,7 @@ func NewTaskRepository(db *sql.DB) TaskRepository {
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
 func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
 	var tasks []model.Task
-	query := "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY due_date DESC"
+	query := FIND_ALL_TASKS_QUERY
 	rows, err := r.db.Query(query, userID)
 	if err != nil {
 		return nil, err
@@ -50,7 +58,7 @@ func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
 // GetTasksByTaskID는 작업 ID로 작업을 조회하는 메서드
 func (r *taskRepository) GetTasksByTaskID(userID int, taskID int) (*model.Task, error) {
 	var task model.Task
-	query := "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE id = $1 AND user_id = $2"
+	query := FIND_ALL_TASKS_QUERY_BY_TASK_ID
 	row := r.db.QueryRow(query, taskID, userID)
 	if err := row.Scan(&task.ID, &task.UserID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
 		if err == sql.ErrNoRows {
@@ -63,7 +71,7 @@ func (r *taskRepository) GetTasksByTaskID(userID int, taskID int) (*model.Task, 
 
 // CreateTasks는 새로운 작업을 생성하는 메서드
 func (r *taskRepository) CreateTasks(userID int, task *model.Task) (*model.Task, error) {
-	query := "INSERT INTO tasks (user_id, title, description, due_date, is_completed, priority) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, updated_at"
+	query := INSERT_TASKS_QUERY
 	row := r.db.QueryRow(query, userID, task.Title, task.Description, task.DueDate, task.IsCompleted, task.Priority)
 	if err := row.Scan(&task.ID, &task.CreatedAt, &task.UpdatedAt); err != nil {
 		return nil, err
@@ -75,7 +83,7 @@ func (r *taskRepository) CreateTasks(userID int, task *model.Task) (*model.Task,
 
 // DeleteTask는 작업을 삭제하는 메서드
 func (r *taskRepository) DeleteTasks(userID int, taskID int) error {
-	query := "DELETE FROM tasks WHERE id = $1 AND user_id = $2"
+	query := DELETE_TASKS_QUERY
 	result, err := r.db.Exec(query, taskID, userID)
 	if err != nil {
 		return err
@@ -94,7 +102,7 @@ func (r *taskRepository) DeleteTasks(userID int, taskID int) error {
 
 // UpdateTasks는 작업을 업데이트하는 메서드
 func (r *taskRepository) UpdateTasks(userID int, taskID int, task *model.Task) (*model.Task, error) {
-	query := "UPDATE tasks SET title = $1, description = $2, due_date = $3, is_completed = $4, priority = $5, updated_at = NOW() WHERE id = $6 AND user_id = $7 RETURNING updated_at"
+	query := UPDATE_TASKS_QUERY
 	row := r.db.QueryRow(query, task.Title, task.Description, task.DueDate, task.IsCompleted, task.Priority, taskID, userID)
 	if err := row.Scan(&task.UpdatedAt); err != nil {
 		return nil, err
