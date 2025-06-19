@@ -52,12 +52,12 @@ func (c *taskController) GetTasks(ctx *gin.Context) {
 	}
 
 	search_query := utils.GetTasksSearchQuery(ctx)
-	tasks, status, err := c.taskService.GetTasks(userID, search_query)
+	taskListResult, status, err := c.taskService.GetTasks(userID, search_query)
 	if err != nil {
 		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(status, gin.H{"tasks": tasks})
+	ctx.JSON(status, gin.H{"tasks": taskListResult.Tasks, "total_count": taskListResult.TotalCount})
 }
 
 // GetTasksByTaskID는 사용자의 특정 작업을 조회하는 메서드

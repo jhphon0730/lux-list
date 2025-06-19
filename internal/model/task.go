@@ -27,6 +27,11 @@ type Task struct {
 	Tags []Tag `db:"-" json:"tags"` // 태그는 Task와 N:M 관계를 가짐
 }
 
+type TaskListResult struct {
+	Tasks      []Task `json:"tasks"`
+	TotalCount int    `json:"total_count"`
+}
+
 // CreateTaskRequest는 작업 생성을 위한 요청 구조체입니다.
 type CreateTaskRequest struct {
 	Title       string    `json:"title"`

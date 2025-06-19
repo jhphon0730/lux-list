@@ -20,7 +20,7 @@ const (
 
 // TaskRepository는 작업 관련 데이터베이스 작업을 정의하는 인터페이스
 type TaskRepository interface {
-	GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, error)
+	GetTasks(userID int, search_query map[string]interface{}) (*model.TaskListResult, error)
 	GetTasksByTaskID(userID int, taskID int) (*model.Task, error)
 	CreateTasks(userID int, task *model.Task) (*model.Task, error)
 	DeleteTasks(userID int, taskID int) error
@@ -40,11 +40,14 @@ func NewTaskRepository(db *sql.DB) TaskRepository {
 }
 
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
-func (r *taskRepository) GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, error) {
+func (r *taskRepository) GetTasks(userID int, search_query map[string]interface{}) (*model.TaskListResult, error) {
 	limit, page := utils.CreatePaginationQuery(search_query)
 	orderBy := utils.CreateOrderByQuery(search_query)
 
-	queryBuilder := sq.Select("id", "user_id", "title", "description", "due_date", "is_completed", "priority", "created_at", "updated_at").
+	queryBuilder := sq.Select(
+		"id", "user_id", "title", "description", "due_date", "is_completed", "priority", "created_at", "updated_at",
+		"COUNT(*) OVER() AS total_count", // 전체 작업 수를 가져오기 위한 서브쿼리
+	).
 		From("tasks").
 		Where(sq.Eq{"user_id": userID}).
 		Limit(uint64(limit)).
@@ -77,15 +80,19 @@ func (r *taskRepository) GetTasks(userID int, search_query map[string]interface{
 	defer rows.Close()
 
 	var tasks []model.Task
+	totalCount := 0
 	for rows.Next() {
 		var task model.Task
-		if err := rows.Scan(&task.ID, &task.UserID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
+		if err := rows.Scan(&task.ID, &task.UserID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt, &totalCount); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, task)
 	}
 
-	return tasks, nil
+	return &model.TaskListResult{
+		Tasks:      tasks,
+		TotalCount: totalCount,
+	}, nil
 }
 
 // GetTasksByTaskID는 작업 ID로 작업을 조회하는 메서드
