@@ -11,7 +11,7 @@ import (
 
 // TaskService는 작업 관련 메서드를 정의하는 인터페이스
 type TaskService interface {
-	GetTasks(userID int) ([]model.Task, int, error)
+	GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, int, error)
 	GetTasksByTaskID(userID int, taskID int) (*model.Task, int, error)
 	CreateTasks(userID int, task *model.Task) (*model.Task, int, error)
 	DeleteTasks(userID int, taskID int) (int, error)
@@ -33,8 +33,8 @@ func NewTaskService(taskRepository repository.TaskRepository) TaskService {
 }
 
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
-func (s *taskService) GetTasks(userID int) ([]model.Task, int, error) {
-	tasks, err := s.taskRepository.GetTasks(userID)
+func (s *taskService) GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, int, error) {
+	tasks, err := s.taskRepository.GetTasks(userID, search_query)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}

@@ -1,1 +1,24 @@
 package utils
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+func GetTasksSearchQuery(c *gin.Context) map[string]interface{} {
+	query := make(map[string]interface{})
+
+	if title := c.Query("title"); title != "" {
+		query["title"] = title
+	}
+	if isCompleted := c.Query("is_completed"); isCompleted != "" {
+		query["is_completed"] = InterfaceToBool(isCompleted)
+	}
+	if priority := c.Query("priority"); priority != "" {
+		query["priority"] = priority
+	}
+	if dueDate := c.Query("due_date"); dueDate != "" {
+		query["due_date"] = dueDate
+	}
+
+	return query
+}

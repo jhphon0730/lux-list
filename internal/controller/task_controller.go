@@ -51,7 +51,8 @@ func (c *taskController) GetTasks(ctx *gin.Context) {
 		return
 	}
 
-	tasks, status, err := c.taskService.GetTasks(userID)
+	search_query := utils.GetTasksSearchQuery(ctx)
+	tasks, status, err := c.taskService.GetTasks(userID, search_query)
 	if err != nil {
 		ctx.JSON(status, gin.H{"error": err.Error()})
 		return

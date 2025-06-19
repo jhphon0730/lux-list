@@ -2,7 +2,10 @@ package repository
 
 import (
 	"database/sql"
+
 	"lux-list/internal/model"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 const (
@@ -15,7 +18,7 @@ const (
 
 // TaskRepository는 작업 관련 데이터베이스 작업을 정의하는 인터페이스
 type TaskRepository interface {
-	GetTasks(userID int) ([]model.Task, error)
+	GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, error)
 	GetTasksByTaskID(userID int, taskID int) (*model.Task, error)
 	CreateTasks(userID int, task *model.Task) (*model.Task, error)
 	DeleteTasks(userID int, taskID int) error
@@ -35,15 +38,38 @@ func NewTaskRepository(db *sql.DB) TaskRepository {
 }
 
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
-func (r *taskRepository) GetTasks(userID int) ([]model.Task, error) {
-	var tasks []model.Task
-	query := FIND_ALL_TASKS_QUERY
-	rows, err := r.db.Query(query, userID)
+func (r *taskRepository) GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, error) {
+	queryBuilder := sq.Select("id", "user_id", "title", "description", "due_date", "is_completed", "priority", "created_at", "updated_at").
+		From("tasks").
+		Where(sq.Eq{"user_id": userID}).
+		OrderBy("due_date DESC")
+
+	// 검색 쿼리 처리
+	for key, value := range search_query {
+		switch key {
+		case "title":
+			queryBuilder = queryBuilder.Where(sq.Like{"title": "%" + value.(string) + "%"})
+		case "is_completed":
+			queryBuilder = queryBuilder.Where(sq.Eq{"is_completed": value})
+		case "priority":
+			queryBuilder = queryBuilder.Where(sq.Eq{"priority": value.(string)})
+		case "due_date":
+			queryBuilder = queryBuilder.Where(sq.Eq{"due_date": value.(string)})
+		}
+	}
+
+	query, args, err := queryBuilder.PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	var tasks []model.Task
 	for rows.Next() {
 		var task model.Task
 		if err := rows.Scan(&task.ID, &task.UserID, &task.Title, &task.Description, &task.DueDate, &task.IsCompleted, &task.Priority, &task.CreatedAt, &task.UpdatedAt); err != nil {
