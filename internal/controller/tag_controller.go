@@ -59,8 +59,40 @@ func (c *tagController) GetTagsByTagID(ctx *gin.Context) {
 
 // GetTagsByUserID는 사용자의 모든 태그를 조회하는 메서드
 func (c *tagController) GetTagsByUserID(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	tags, status, err := c.tagService.GetTagsByUserID(userID)
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"tags": tags})
 }
 
 // GetTagsByTaskID는 작업 ID로 태그를 조회하는 메서드
 func (c *tagController) GetTagsByTaskID(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	tags, status, err := c.tagService.GetTagsByTaskID(userID, utils.InterfaceToInt(taskID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"tags": tags})
 }
