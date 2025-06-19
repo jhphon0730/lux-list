@@ -25,6 +25,9 @@ func GetTasksSearchQuery(c *gin.Context) map[string]interface{} {
 	if dueDate := c.Query("due_date"); dueDate != "" {
 		query["due_date"] = dueDate
 	}
+	if orderBy := c.Query("order_by"); orderBy != "" {
+		query["order_by"] = orderBy
+	}
 
 	return query
 }

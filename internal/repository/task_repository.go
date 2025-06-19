@@ -42,13 +42,14 @@ func NewTaskRepository(db *sql.DB) TaskRepository {
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
 func (r *taskRepository) GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, error) {
 	limit, page := utils.CreatePaginationQuery(search_query)
+	orderBy := utils.CreateOrderByQuery(search_query)
 
 	queryBuilder := sq.Select("id", "user_id", "title", "description", "due_date", "is_completed", "priority", "created_at", "updated_at").
 		From("tasks").
 		Where(sq.Eq{"user_id": userID}).
 		Limit(uint64(limit)).
 		Offset(uint64((page - 1) * limit)).
-		OrderBy("due_date DESC")
+		OrderBy(orderBy)
 
 	// 검색 쿼리 처리
 	for key, value := range search_query {
