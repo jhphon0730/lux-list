@@ -31,3 +31,15 @@ func NewTagController(tagService service.TagService) TagController {
 		tagService: tagService,
 	}
 }
+
+// GetTagsByTagID는 태그 ID로 태그를 조회하는 메서드
+func (c *tagController) GetTagsByTagID(ctx *gin.Context) {
+}
+
+// GetTagsByUserID는 사용자의 모든 태그를 조회하는 메서드
+func (c *tagController) GetTagsByUserID(ctx *gin.Context) {
+}
+
+// GetTagsByTaskID는 특정 작업에 연결된 태그를 조회하는 메서드
+func (c *tagController) GetTagsByTaskID(ctx *gin.Context) {
+}

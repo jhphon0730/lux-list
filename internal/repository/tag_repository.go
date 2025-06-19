@@ -30,7 +30,7 @@ func NewTagRepository(db *sql.DB) TagRepository {
 	}
 }
 
-// GetTagsByUserID는 사용자의 모든 태그를 조회하는 메서드
+// GetTagsByTagID는 태그 ID로 태그를 조회하는 메서드
 func (r *tagRepository) GetTagsByTagID(userID int, tagID int) (*model.Tag, error) {
 	row := r.db.QueryRow(GET_TAGS_BY_TAG_ID_QUERY, userID, tagID)
 	var tag model.Tag

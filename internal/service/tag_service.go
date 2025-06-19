@@ -27,7 +27,7 @@ func NewTagService(tagRepository repository.TagRepository) TagService {
 	}
 }
 
-// GetTagsByTagID는 사용자의 특정 태그를 조회하는 메서드
+// GetTagsByTagID는 태그 ID로 태그를 조회하는 메서드
 func (s *tagService) GetTagsByTagID(userID int, tagID int) (*model.Tag, int, error) {
 	tag, err := s.tagRepository.GetTagsByTagID(userID, tagID)
 	if err != nil {
