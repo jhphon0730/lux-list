@@ -2,6 +2,8 @@ package controller
 
 import (
 	"lux-list/internal/service"
+	"lux-list/pkg/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,12 +36,31 @@ func NewTagController(tagService service.TagService) TagController {
 
 // GetTagsByTagID는 태그 ID로 태그를 조회하는 메서드
 func (c *tagController) GetTagsByTagID(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	tagID := ctx.Param("tagID")
+	if tagID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Tag ID is required"})
+		return
+	}
+
+	tag, status, err := c.tagService.GetTagsByTagID(userID, utils.InterfaceToInt(tagID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"tag": tag})
 }
 
 // GetTagsByUserID는 사용자의 모든 태그를 조회하는 메서드
 func (c *tagController) GetTagsByUserID(ctx *gin.Context) {
 }
 
-// GetTagsByTaskID는 특정 작업에 연결된 태그를 조회하는 메서드
+// GetTagsByTaskID는 작업 ID로 태그를 조회하는 메서드
 func (c *tagController) GetTagsByTaskID(ctx *gin.Context) {
 }
