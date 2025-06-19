@@ -4,11 +4,13 @@ import (
 	"database/sql"
 
 	"lux-list/internal/model"
+	"lux-list/pkg/utils"
 
 	sq "github.com/Masterminds/squirrel"
 )
 
 const (
+	// Query
 	FIND_ALL_TASKS_QUERY            = "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY due_date DESC"
 	FIND_ALL_TASKS_QUERY_BY_TASK_ID = "SELECT id, user_id, title, description, due_date, is_completed, priority, created_at, updated_at FROM tasks WHERE id = $1 AND user_id = $2"
 	INSERT_TASKS_QUERY              = "INSERT INTO tasks (user_id, title, description, due_date, is_completed, priority) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, updated_at"
@@ -39,9 +41,13 @@ func NewTaskRepository(db *sql.DB) TaskRepository {
 
 // GetTasks는 사용자의 모든 작업을 조회하는 메서드
 func (r *taskRepository) GetTasks(userID int, search_query map[string]interface{}) ([]model.Task, error) {
+	limit, page := utils.CreatePaginationQuery(search_query)
+
 	queryBuilder := sq.Select("id", "user_id", "title", "description", "due_date", "is_completed", "priority", "created_at", "updated_at").
 		From("tasks").
 		Where(sq.Eq{"user_id": userID}).
+		Limit(uint64(limit)).
+		Offset(uint64((page - 1) * limit)).
 		OrderBy("due_date DESC")
 
 	// 검색 쿼리 처리

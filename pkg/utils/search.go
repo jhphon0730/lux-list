@@ -7,6 +7,12 @@ import (
 func GetTasksSearchQuery(c *gin.Context) map[string]interface{} {
 	query := make(map[string]interface{})
 
+	if limit := c.Query("limit"); limit != "" {
+		query["limit"] = InterfaceToInt(limit)
+	}
+	if page := c.Query("page"); page != "" {
+		query["page"] = InterfaceToInt(page)
+	}
 	if title := c.Query("title"); title != "" {
 		query["title"] = title
 	}
