@@ -10,7 +10,6 @@ import (
 
 // TagService는 태그 관련 메서드를 정의하는 인터페이스
 type TagService interface {
-	GetTags(userID int) ([]model.Tag, int, error)
 	GetTagsByTagID(userID int, tagID int) (*model.Tag, int, error)
 	GetTagsByUserID(userID int) ([]model.Tag, int, error)
 	GetTagsByTaskID(userID int, taskID int) ([]model.Tag, int, error)
@@ -26,15 +25,6 @@ func NewTagService(tagRepository repository.TagRepository) TagService {
 	return &tagService{
 		tagRepository: tagRepository,
 	}
-}
-
-// GetTags는 사용자의 모든 태그를 조회하는 메서드
-func (s *tagService) GetTags(userID int) ([]model.Tag, int, error) {
-	tags, err := s.tagRepository.GetTags(userID)
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-	return tags, http.StatusOK, nil
 }
 
 // GetTagsByTagID는 사용자의 특정 태그를 조회하는 메서드
