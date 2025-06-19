@@ -1,9 +1,17 @@
 package service
 
-import "lux-list/internal/repository"
+import (
+	"lux-list/internal/model"
+	"lux-list/internal/repository"
+)
 
 // TagService는 태그 관련 메서드를 정의하는 인터페이스
-type TagService interface{}
+type TagService interface {
+	GetTags(userID int) ([]model.Tag, int, error)
+	GetTagsByTagID(userID int, tagID int) (*model.Tag, int, error)
+	GetTagsByUserID(userID int) ([]model.Tag, int, error)
+	GetTagsByTaskID(userID int, taskID int) ([]model.Tag, int, error)
+}
 
 // tagService는 TagService 인터페이스를 구현하는 구조체
 type tagService struct {
