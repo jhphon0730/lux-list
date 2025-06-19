@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"lux-list/internal/model"
 	"lux-list/internal/service"
 	"lux-list/pkg/utils"
 	"net/http"
@@ -13,6 +14,7 @@ type TagController interface {
 	GetTagsByTagID(c *gin.Context)
 	GetTagsByUserID(c *gin.Context)
 	GetTagsByTaskID(c *gin.Context)
+	CreateTags(c *gin.Context)
 }
 
 // tagController는 TagController 인터페이스를 구현하는 구조체
@@ -25,6 +27,7 @@ func RegisterTagRoutes(router *gin.RouterGroup, tagController TagController) {
 	router.GET("/:tagID", tagController.GetTagsByTagID)
 	router.GET("/user/:userID", tagController.GetTagsByUserID)
 	router.GET("/task/:taskID", tagController.GetTagsByTaskID)
+	router.POST("/", tagController.CreateTags)
 }
 
 // NewTagController는 TagController의 인스턴스를 생성하는 함수
@@ -95,4 +98,32 @@ func (c *tagController) GetTagsByTaskID(ctx *gin.Context) {
 	}
 
 	ctx.JSON(status, gin.H{"tags": tags})
+}
+
+// CreateTags는 사용자의 태그를 생성하는 메서드
+func (c *tagController) CreateTags(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var req model.CreateTagRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	if err := req.CheckValidCreateTagRequest(); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	createdTag, status, err := c.tagService.CreateTags(userID, req.ToTag(userID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"tag": createdTag})
 }

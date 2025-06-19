@@ -13,6 +13,7 @@ type TagService interface {
 	GetTagsByTagID(userID int, tagID int) (*model.Tag, int, error)
 	GetTagsByUserID(userID int) ([]model.Tag, int, error)
 	GetTagsByTaskID(userID int, taskID int) ([]model.Tag, int, error)
+	CreateTags(userID int, tag *model.Tag) (*model.Tag, int, error)
 }
 
 // tagService는 TagService 인터페이스를 구현하는 구조체
@@ -55,4 +56,13 @@ func (s *tagService) GetTagsByTaskID(userID int, taskID int) ([]model.Tag, int, 
 		return nil, http.StatusInternalServerError, err
 	}
 	return tags, http.StatusOK, nil
+}
+
+// CreateTags는 사용자의 태그를 생성하는 메서드
+func (s *tagService) CreateTags(userID int, tag *model.Tag) (*model.Tag, int, error) {
+	createdTag, err := s.tagRepository.CreateTags(userID, tag)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return createdTag, http.StatusCreated, nil
 }

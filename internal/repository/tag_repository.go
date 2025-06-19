@@ -6,9 +6,10 @@ import (
 )
 
 const (
-	GET_TAGS_BY_TAG_ID_QUERY  = "SELECT id, name, color, created_at FROM tags WHERE user_id = $1 AND id = $2"
-	GET_TAGS_BY_USER_ID_QUERY = "SELECT id, name, color, created_at FROM tags WHERE user_id = $1"
-	GET_TAGS_BY_TASK_ID_QUERY = "SELECT id, name, color, created_at FROM tags WHERE id IN (SELECT tag_id FROM task_tags WHERE task_id = $1)"
+	GET_TAGS_BY_TAG_ID_QUERY  = "SELECT id, user_id, name, color, created_at FROM tags WHERE user_id = $1 AND id = $2"
+	GET_TAGS_BY_USER_ID_QUERY = "SELECT id, user_id, name, color, created_at FROM tags WHERE user_id = $1"
+	GET_TAGS_BY_TASK_ID_QUERY = "SELECT id, user_id, name, color, created_at FROM tags WHERE id IN (SELECT tag_id FROM task_tags WHERE task_id = $1)"
+	INSERT_TAG_QUERY          = "INSERT INTO tags (user_id, name, color) VALUES ($1, $2, $3) RETURNING id, created_at"
 )
 
 // TagRepository는 태그 관련 데이터베이스 작업을 정의하는 인터페이스
@@ -16,6 +17,7 @@ type TagRepository interface {
 	GetTagsByTagID(userID int, tagID int) (*model.Tag, error)
 	GetTagsByUserID(userID int) ([]model.Tag, error)
 	GetTagsByTaskID(userID int, taskID int) ([]model.Tag, error)
+	CreateTags(userID int, tag *model.Tag) (*model.Tag, error)
 }
 
 // tagRepository는 TagRepository 인터페이스를 구현하는 구조체
@@ -34,7 +36,7 @@ func NewTagRepository(db *sql.DB) TagRepository {
 func (r *tagRepository) GetTagsByTagID(userID int, tagID int) (*model.Tag, error) {
 	row := r.db.QueryRow(GET_TAGS_BY_TAG_ID_QUERY, userID, tagID)
 	var tag model.Tag
-	if err := row.Scan(&tag.ID, &tag.Name, &tag.Color, &tag.CreatedAt); err != nil {
+	if err := row.Scan(&tag.ID, &tag.UserID, &tag.Name, &tag.Color, &tag.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -54,7 +56,7 @@ func (r *tagRepository) GetTagsByUserID(userID int) ([]model.Tag, error) {
 	var tags []model.Tag
 	for rows.Next() {
 		var tag model.Tag
-		if err := rows.Scan(&tag.ID, &tag.Name, &tag.Color, &tag.CreatedAt); err != nil {
+		if err := rows.Scan(&tag.ID, &tag.UserID, &tag.Name, &tag.Color, &tag.CreatedAt); err != nil {
 			return nil, err
 		}
 		tags = append(tags, tag)
@@ -73,10 +75,20 @@ func (r *tagRepository) GetTagsByTaskID(userID int, taskID int) ([]model.Tag, er
 	var tags []model.Tag
 	for rows.Next() {
 		var tag model.Tag
-		if err := rows.Scan(&tag.ID, &tag.Name, &tag.Color, &tag.CreatedAt); err != nil {
+		if err := rows.Scan(&tag.ID, &tag.UserID, &tag.Name, &tag.Color, &tag.CreatedAt); err != nil {
 			return nil, err
 		}
 		tags = append(tags, tag)
 	}
 	return tags, nil
+}
+
+// CreateTags는 새로운 태그를 생성하는 메서드
+func (r *tagRepository) CreateTags(userID int, tag *model.Tag) (*model.Tag, error) {
+	row := r.db.QueryRow(INSERT_TAG_QUERY, userID, tag.Name, tag.Color)
+	if err := row.Scan(&tag.ID, &tag.CreatedAt); err != nil {
+		return nil, err
+	}
+	tag.UserID = userID
+	return tag, nil
 }
