@@ -17,8 +17,9 @@
 * [x] 할 일 검색 (제목 / 설명 텍스트 기준)
 * [x] 할 일 정렬 (우선순위, 마감일 기준)
 * [x] 할 일 필터링 (완료 여부, 태그별, 우선순위별)
-* [ ] 할 일 태그 추가 ( TaskTagRepository 사용 )
-* [ ] 할 일 태그 삭제 ( TaskTagRepository 사용 )
+* [x] 할 일 태그 추가 ( TaskTagRepository 사용 )
+* [x] 할 일 태그 삭제 ( TaskTagRepository 사용 )
+* [x] 할 일 조회시에 태그 정보도 함께 조회 ( TaskTagRepository 사용 )
 
 ---
 
