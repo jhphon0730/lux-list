@@ -123,8 +123,7 @@ func (r *taskRepository) CreateTasks(userID int, task *model.Task) (*model.Task,
 
 // DeleteTask는 작업을 삭제하는 메서드
 func (r *taskRepository) DeleteTasks(userID int, taskID int) error {
-	query := DELETE_TASKS_QUERY
-	result, err := r.db.Exec(query, taskID, userID)
+	result, err := r.db.Exec(DELETE_TASKS_QUERY, taskID, userID)
 	if err != nil {
 		return err
 	}

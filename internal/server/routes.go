@@ -17,9 +17,12 @@ var (
 	authService    = service.NewAuthService(authRepository)
 	taskRepository = repository.NewTaskRepository(db)
 	taskService    = service.NewTaskService(taskRepository)
+	tagRepository  = repository.NewTagRepository(db)
+	tagService     = service.NewTagService(tagRepository)
 
 	authController = controller.NewAuthController(authService)
 	taskController = controller.NewTaskController(taskService)
+	tagController  = controller.NewTagController(tagService)
 )
 
 // registerRoutes는 gin 엔진에 라우트를 등록하는 함수
@@ -34,6 +37,11 @@ func registerRoutes(engine *gin.Engine) {
 		tasks.Use(middleware.AuthMiddleware())
 		{
 			controller.RegisterTaskRoutes(tasks, taskController)
+		}
+		tags := v1.Group("/tags")
+		tags.Use(middleware.AuthMiddleware())
+		{
+			controller.RegisterTagRoutes(tags, tagController)
 		}
 	}
 }
