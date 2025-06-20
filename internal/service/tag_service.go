@@ -15,6 +15,7 @@ type TagService interface {
 	GetTagsByTaskID(userID int, taskID int) ([]model.Tag, int, error)
 	CreateTags(userID int, tag *model.Tag) (*model.Tag, int, error)
 	DeleteTags(userID int, tagID int) (int, error)
+	UpdateTags(userID int, tagID int, tag *model.Tag) (*model.Tag, int, error)
 }
 
 // tagService는 TagService 인터페이스를 구현하는 구조체
@@ -78,4 +79,13 @@ func (s *tagService) DeleteTags(userID int, tagID int) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 	return http.StatusNoContent, nil
+}
+
+// UpdateTags는 태그를 업데이트하는 메서드
+func (s *tagService) UpdateTags(userID int, tagID int, tag *model.Tag) (*model.Tag, int, error) {
+	updatedTag, err := s.tagRepository.UpdateTags(userID, tagID, tag)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return updatedTag, http.StatusOK, nil
 }

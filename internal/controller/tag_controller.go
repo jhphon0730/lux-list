@@ -16,6 +16,7 @@ type TagController interface {
 	GetTagsByTaskID(c *gin.Context)
 	CreateTags(c *gin.Context)
 	DeleteTags(c *gin.Context)
+	UpdateTags(c *gin.Context)
 }
 
 // tagController는 TagController 인터페이스를 구현하는 구조체
@@ -30,6 +31,7 @@ func RegisterTagRoutes(router *gin.RouterGroup, tagController TagController) {
 	router.GET("/task/:taskID", tagController.GetTagsByTaskID)
 	router.POST("/", tagController.CreateTags)
 	router.DELETE("/:tagID", tagController.DeleteTags)
+	router.PUT("/:tagID", tagController.UpdateTags)
 }
 
 // NewTagController는 TagController의 인스턴스를 생성하는 함수
@@ -151,4 +153,44 @@ func (c *tagController) DeleteTags(ctx *gin.Context) {
 	}
 
 	ctx.JSON(status, gin.H{"message": "Tag deleted successfully"})
+}
+
+// UpdateTags는 태그를 업데이트하는 메서드
+func (c *tagController) UpdateTags(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	tagID := ctx.Param("tagID")
+	if tagID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Tag ID is required"})
+		return
+	}
+
+	var req model.UpdateTagRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	if err := req.CheckValidUpdateTagRequest(); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	findTag, status, err := c.tagService.GetTagsByTagID(userID, utils.InterfaceToInt(tagID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	updatedTag, status, err := c.tagService.UpdateTags(userID, utils.InterfaceToInt(tagID), req.ToTag(findTag))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"tag": updatedTag})
 }

@@ -11,6 +11,7 @@ const (
 	GET_TAGS_BY_TASK_ID_QUERY = "SELECT id, user_id, name, color, created_at FROM tags WHERE id IN (SELECT tag_id FROM task_tags WHERE task_id = $1)"
 	INSERT_TAGS_QUERY         = "INSERT INTO tags (user_id, name, color) VALUES ($1, $2, $3) RETURNING id, created_at"
 	DELETE_TAGS_QUERY         = "DELETE FROM tags WHERE user_id = $1 AND id = $2"
+	UPDATE_TAGS_QUERY         = "UPDATE tags SET name = $1, color = $2 WHERE user_id = $3 AND id = $4 RETURNING id, created_at"
 )
 
 // TagRepository는 태그 관련 데이터베이스 작업을 정의하는 인터페이스
@@ -20,6 +21,7 @@ type TagRepository interface {
 	GetTagsByTaskID(userID int, taskID int) ([]model.Tag, error)
 	CreateTags(userID int, tag *model.Tag) (*model.Tag, error)
 	DeleteTags(userID int, tagID int) error
+	UpdateTags(userID int, tagID int, tag *model.Tag) (*model.Tag, error)
 }
 
 // tagRepository는 TagRepository 인터페이스를 구현하는 구조체
@@ -111,4 +113,17 @@ func (r *tagRepository) DeleteTags(userID int, tagID int) error {
 	}
 
 	return nil
+}
+
+// UpdateTags는 태그를 업데이트하는 메서드
+func (r *tagRepository) UpdateTags(userID int, tagID int, tag *model.Tag) (*model.Tag, error) {
+	row := r.db.QueryRow(UPDATE_TAGS_QUERY, tag.Name, tag.Color, userID, tagID)
+	if err := row.Scan(&tag.ID, &tag.CreatedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, sql.ErrNoRows
+		}
+		return nil, err
+	}
+	tag.UserID = userID
+	return tag, nil
 }
