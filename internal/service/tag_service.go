@@ -14,6 +14,7 @@ type TagService interface {
 	GetTagsByUserID(userID int) ([]model.Tag, int, error)
 	GetTagsByTaskID(userID int, taskID int) ([]model.Tag, int, error)
 	CreateTags(userID int, tag *model.Tag) (*model.Tag, int, error)
+	DeleteTags(userID int, tagID int) (int, error)
 }
 
 // tagService는 TagService 인터페이스를 구현하는 구조체
@@ -65,4 +66,16 @@ func (s *tagService) CreateTags(userID int, tag *model.Tag) (*model.Tag, int, er
 		return nil, http.StatusInternalServerError, err
 	}
 	return createdTag, http.StatusCreated, nil
+}
+
+// DeleteTags는 태그를 삭제하는 메서드
+func (s *tagService) DeleteTags(userID int, tagID int) (int, error) {
+	err := s.tagRepository.DeleteTags(userID, tagID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return http.StatusNotFound, errors.New("tag not found")
+		}
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusNoContent, nil
 }

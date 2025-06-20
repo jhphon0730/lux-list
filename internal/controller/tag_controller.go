@@ -15,6 +15,7 @@ type TagController interface {
 	GetTagsByUserID(c *gin.Context)
 	GetTagsByTaskID(c *gin.Context)
 	CreateTags(c *gin.Context)
+	DeleteTags(c *gin.Context)
 }
 
 // tagController는 TagController 인터페이스를 구현하는 구조체
@@ -28,6 +29,7 @@ func RegisterTagRoutes(router *gin.RouterGroup, tagController TagController) {
 	router.GET("/user/:userID", tagController.GetTagsByUserID)
 	router.GET("/task/:taskID", tagController.GetTagsByTaskID)
 	router.POST("/", tagController.CreateTags)
+	router.DELETE("/:tagID", tagController.DeleteTags)
 }
 
 // NewTagController는 TagController의 인스턴스를 생성하는 함수
@@ -126,4 +128,27 @@ func (c *tagController) CreateTags(ctx *gin.Context) {
 	}
 
 	ctx.JSON(status, gin.H{"tag": createdTag})
+}
+
+// DeleteTags는 태그를 삭제하는 메서드
+func (c *tagController) DeleteTags(ctx *gin.Context) {
+	userID, err := utils.GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	tagID := ctx.Param("tagID")
+	if tagID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Tag ID is required"})
+		return
+	}
+
+	status, err := c.tagService.DeleteTags(userID, utils.InterfaceToInt(tagID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"message": "Tag deleted successfully"})
 }
