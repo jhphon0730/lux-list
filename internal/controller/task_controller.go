@@ -83,6 +83,14 @@ func (c *taskController) GetTasksByTaskID(ctx *gin.Context) {
 		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
+
+	tags, status, err := c.taskTagService.GetTagsByTaskID(utils.InterfaceToInt(taskID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	task.Tags = tags
+
 	ctx.JSON(status, gin.H{"task": task})
 }
 
