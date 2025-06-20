@@ -13,15 +13,17 @@ import (
 var (
 	db = database.GetDB()
 
-	authRepository = repository.NewAuthRepository(db)
-	authService    = service.NewAuthService(authRepository)
-	taskRepository = repository.NewTaskRepository(db)
-	taskService    = service.NewTaskService(taskRepository)
-	tagRepository  = repository.NewTagRepository(db)
-	tagService     = service.NewTagService(tagRepository)
+	authRepository    = repository.NewAuthRepository(db)
+	authService       = service.NewAuthService(authRepository)
+	taskRepository    = repository.NewTaskRepository(db)
+	taskService       = service.NewTaskService(taskRepository)
+	tagRepository     = repository.NewTagRepository(db)
+	tagService        = service.NewTagService(tagRepository)
+	taskTagRepository = repository.NewTaskTagRepository(db)
+	taskTagService    = service.NewTaskTagService(taskTagRepository)
 
 	authController = controller.NewAuthController(authService)
-	taskController = controller.NewTaskController(taskService)
+	taskController = controller.NewTaskController(taskService, taskTagService)
 	tagController  = controller.NewTagController(tagService)
 )
 

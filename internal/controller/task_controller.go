@@ -22,7 +22,8 @@ type TaskController interface {
 
 // taskController는 TaskController 인터페이스를 구현하는 구조체
 type taskController struct {
-	taskService service.TaskService
+	taskService    service.TaskService
+	taskTagService service.TaskTagService
 }
 
 // RegisterTaskRoutes는 작업 관련 라우트를 등록하는 함수
@@ -37,9 +38,10 @@ func RegisterTaskRoutes(router *gin.RouterGroup, taskController TaskController) 
 }
 
 // NewTaskController는 TaskController의 인스턴스를 생성하는 함수
-func NewTaskController(taskService service.TaskService) TaskController {
+func NewTaskController(taskService service.TaskService, taskTagService service.TaskTagService) TaskController {
 	return &taskController{
-		taskService: taskService,
+		taskService:    taskService,
+		taskTagService: taskTagService,
 	}
 }
 
