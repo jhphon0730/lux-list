@@ -18,7 +18,10 @@ type TaskController interface {
 	UpdateTasks(c *gin.Context)
 	CompleteTasks(c *gin.Context)
 	InCompleteTasks(c *gin.Context)
+
+	// Task & Tag Methods
 	AddTagToTask(c *gin.Context)
+	RemoveTagFromTask(c *gin.Context)
 }
 
 // taskController는 TaskController 인터페이스를 구현하는 구조체
@@ -36,7 +39,10 @@ func RegisterTaskRoutes(router *gin.RouterGroup, taskController TaskController) 
 	router.PUT("/:taskID", taskController.UpdateTasks)
 	router.PATCH("/:taskID/complete", taskController.CompleteTasks)
 	router.PATCH("/:taskID/incomplete", taskController.InCompleteTasks)
+
+	// Task & Tag Methods
 	router.POST("/:taskID/tags/:tagID", taskController.AddTagToTask)
+	router.DELETE("/:taskID/tags/:tagID", taskController.RemoveTagFromTask)
 }
 
 // NewTaskController는 TaskController의 인스턴스를 생성하는 함수
@@ -252,4 +258,27 @@ func (c *taskController) AddTagToTask(ctx *gin.Context) {
 	}
 
 	ctx.JSON(status, gin.H{"message": "Tag added to task successfully"})
+}
+
+// RemoveTagFromTask는 작업에서 태그를 제거하는 메서드
+func (c *taskController) RemoveTagFromTask(ctx *gin.Context) {
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	tagID := ctx.Param("tagID")
+	if tagID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Tag ID is required"})
+		return
+	}
+
+	status, err := c.taskTagService.RemoveTagFromTask(utils.InterfaceToInt(taskID), utils.InterfaceToInt(tagID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"message": "Tag removed from task successfully"})
 }
