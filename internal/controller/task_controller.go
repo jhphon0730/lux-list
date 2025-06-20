@@ -18,6 +18,7 @@ type TaskController interface {
 	UpdateTasks(c *gin.Context)
 	CompleteTasks(c *gin.Context)
 	InCompleteTasks(c *gin.Context)
+	AddTagToTask(c *gin.Context)
 }
 
 // taskController는 TaskController 인터페이스를 구현하는 구조체
@@ -35,6 +36,7 @@ func RegisterTaskRoutes(router *gin.RouterGroup, taskController TaskController) 
 	router.PUT("/:taskID", taskController.UpdateTasks)
 	router.PATCH("/:taskID/complete", taskController.CompleteTasks)
 	router.PATCH("/:taskID/incomplete", taskController.InCompleteTasks)
+	router.POST("/:taskID/tags/:tagID", taskController.AddTagToTask)
 }
 
 // NewTaskController는 TaskController의 인스턴스를 생성하는 함수
@@ -219,4 +221,27 @@ func (c *taskController) InCompleteTasks(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(status, gin.H{"task": updatedTask})
+}
+
+// AddTagToTask는 작업에 태그를 추가하는 메서드
+func (c *taskController) AddTagToTask(ctx *gin.Context) {
+	taskID := ctx.Param("taskID")
+	if taskID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
+		return
+	}
+
+	tagID := ctx.Param("tagID")
+	if tagID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Tag ID is required"})
+		return
+	}
+
+	status, err := c.taskTagService.AddTagToTask(utils.InterfaceToInt(taskID), utils.InterfaceToInt(tagID))
+	if err != nil {
+		ctx.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(status, gin.H{"message": "Tag added to task successfully"})
 }
