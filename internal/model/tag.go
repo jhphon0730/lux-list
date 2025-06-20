@@ -27,6 +27,9 @@ func (r *CreateTagRequest) CheckValidCreateTagRequest() error {
 	if r.Color == "" {
 		return errors.New("color is required")
 	}
+	if len(r.Color) != 7 || r.Color[0] != '#' {
+		return errors.New("color must be a valid hex code (e.g., #FFFFFF)")
+	}
 	return nil
 }
 
