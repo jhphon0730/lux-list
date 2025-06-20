@@ -31,8 +31,8 @@ func NewTaskTagService(taskTagRepository repository.TaskTagRepository) TaskTagSe
 func (s *taskTagService) AddTagToTask(taskID int, tagID int) (int, error) {
 	err := s.taskTagRepository.AddTagToTask(taskID, tagID)
 	if err != nil {
-		if err == sql.ErrTxDone {
-			return http.StatusConflict, errors.New("tag already exists in task")
+		if err == repository.ErrTagAlreadyLinked {
+			return http.StatusConflict, repository.ErrTagAlreadyLinked
 		}
 		return http.StatusInternalServerError, err
 	}

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"lux-list/internal/model"
 )
 
@@ -9,6 +10,10 @@ const (
 	EXIST_TAG_IN_TASK_QUERY    = "SELECT EXISTS(SELECT 1 FROM task_tags WHERE task_id = $1 AND tag_id = $2)"
 	ADD_TAG_TO_TASK_QUERY      = "INSERT INTO task_tags (task_id, tag_id) VALUES ($1, $2)"
 	REMOVE_TAG_FROM_TASK_QUERY = "DELETE FROM task_tags WHERE task_id = $1 AND tag_id = $2"
+)
+
+var (
+	ErrTagAlreadyLinked = errors.New("tag already linked to task")
 )
 
 // TaskTagRepository는 작업과 태그 간의 관계를 관리하는 인터페이스
@@ -41,7 +46,7 @@ func (r *taskTagRepository) AddTagToTask(taskID int, tagID int) error {
 
 	// 이미 연결되어 있다면 sql.ErrNoRows 대신 의미 있는 에러를 반환
 	if exists {
-		return sql.ErrTxDone
+		return ErrTagAlreadyLinked
 	}
 
 	// 연결되어 있지 않으면 태그 추가
