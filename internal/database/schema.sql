@@ -1,12 +1,12 @@
 -- 사용자 테이블
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 반복 템플릿 테이블
-CREATE TABLE task_templates (
+CREATE TABLE IF NOT EXISTS task_templates (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE task_templates (
 );
 
 -- 할 일 테이블 (Task 인스턴스)
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
     id SERIAL PRIMARY KEY,
     template_id INTEGER REFERENCES task_templates(id) ON DELETE SET NULL,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -34,7 +34,7 @@ CREATE TABLE tasks (
 );
 
 -- 태그 테이블
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(50) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE tags (
 );
 
 -- 할 일 - 태그 연결 테이블 (다대다)
-CREATE TABLE task_tags (
+CREATE TABLE IF NOT EXISTS task_tags (
     task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
     tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
     PRIMARY KEY (task_id, tag_id)
