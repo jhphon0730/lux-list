@@ -64,7 +64,7 @@ func loadConfig() *Config {
 		Database: PostgresConfig{
 			DB_HOST:     getEnv("DB_HOST", "localhost"),
 			DB_USER:     getEnv("DB_USER", "postgres"),
-			DB_PASSWORD: getEnv("DB_PASSWORD", "postgrespassword"),
+			DB_PASSWORD: getEnv("DB_PASSWORD", "postgres"),
 			DB_NAME:     getEnv("DB_NAME", "postgres"),
 			DB_PORT:     getEnv("DB_PORT", "5432"),
 			SSL_MODE:    getEnv("SSL_MODE", "disable"),
