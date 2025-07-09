@@ -35,7 +35,7 @@ export const FetchWithAuth = async (url: string, options: fetchOptions = {}) => 
 	try {
 		const mergeOptions = {
 			...options,
-			Credentials: "include",
+			credentials: "include" as RequestCredentials,
 			headers: {
 				...defaultHeaders,
 				...options.headers,
@@ -62,7 +62,7 @@ export const FetchWithAuthFormData = async (url: string, options: fetchOptions =
 	try {
 		const mergeOptions = {
 			...options,
-			Credentials: "include",
+			credentials: "include" as RequestCredentials,
 			headers: {
 				...options.headers, // Content-Type 제거 (자동 설정됨)
 			},
