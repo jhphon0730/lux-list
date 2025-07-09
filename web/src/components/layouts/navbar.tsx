@@ -29,11 +29,7 @@ const Navbar = () => {
 
       {/* Right side actions */}
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon">
-          <Bell className="h-4 w-4" />
-        </Button>
-
-        <Button size="sm" className="gap-2">
+        <Button size="sm" className="gap-2 cursor-pointer">
           <Plus className="h-4 w-4" />
           Add Task
         </Button>
@@ -51,10 +47,6 @@ const Navbar = () => {
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Log out</DropdownMenuItem>
