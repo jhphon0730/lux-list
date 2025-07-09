@@ -1,9 +1,9 @@
 const App = () => {
-	return (
-		<div>
-			<h1>Hello World</h1>
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center">
+			Hello World
 		</div>
-	);
-};
+  )
+}
 
-export default App;
+export default App
