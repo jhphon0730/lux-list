@@ -24,7 +24,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import { mainNavItems, projectItems, labelItems, utilityNavItems } from "@/data/navigations"
+import { mainNavItems, labelItems, utilityNavItems } from "@/data/navigations"
 
 const LayoutSidebar = () => {
   return (
@@ -52,38 +52,6 @@ const LayoutSidebar = () => {
                     <a href={item.url} className="flex items-center gap-3">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <Separator className="my-2" />
-
-        {/* Projects */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between">
-            Projects
-            <SidebarMenuAction>
-              <Plus className="h-4 w-4" />
-            </SidebarMenuAction>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {projectItems.map((project) => (
-                <SidebarMenuItem key={project.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={project.url} className="flex items-center gap-3">
-                      <div className={`h-3 w-3 rounded-full ${project.color}`} />
-                      <span>{project.title}</span>
-                      <span className="ml-auto text-xs text-muted-foreground">{project.count}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -97,20 +65,22 @@ const LayoutSidebar = () => {
         {/* Labels */}
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
-            Labels
-            <SidebarMenuAction>
-              <Plus className="h-4 w-4" />
-            </SidebarMenuAction>
+            <span>
+              Labels
+            </span>
+            <span>
+              <Plus className="h-3 w-3 font-bold" />
+            </span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {labelItems.map((label) => (
                 <SidebarMenuItem key={label.title}>
                   <SidebarMenuButton asChild>
-                    <a href={label.url} className="flex items-center gap-3">
-                      <Tag className="h-4 w-4" />
+                    <a href={label.url} className="flex items-center">
+                      <Tag className="h-3 w-3" />
                       <span>{label.title}</span>
-                      <div className={`ml-auto h-2 w-2 rounded-full ${label.color}`} />
+                      <div className={`ml-auto h-3 w-3 rounded-full ${label.color}`} />
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -144,7 +114,7 @@ const LayoutSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild className="cursor-pointer">
                 <SidebarMenuButton className="w-full">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src="/placeholder-user.jpg" />
@@ -152,7 +122,6 @@ const LayoutSidebar = () => {
                   </Avatar>
                   <div className="flex flex-col items-start text-left">
                     <span className="text-sm font-medium">John Doe</span>
-                    <span className="text-xs text-muted-foreground">john@example.com</span>
                   </div>
                   <MoreHorizontal className="ml-auto h-4 w-4" />
                 </SidebarMenuButton>
@@ -162,11 +131,6 @@ const LayoutSidebar = () => {
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

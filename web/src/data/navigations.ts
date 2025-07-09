@@ -1,17 +1,15 @@
-import { Calendar, CheckSquare, Filter, Inbox, Settings, Star } from "lucide-react"
+import { Calendar, CheckSquare, Filter, Inbox, Star } from "lucide-react"
 
 export const mainNavItems = [
   {
     title: "Inbox",
     url: "/inbox",
     icon: Inbox,
-    badge: 12,
   },
   {
     title: "Today",
     url: "/today",
     icon: Calendar,
-    badge: 5,
   },
   {
     title: "Upcoming",
@@ -22,27 +20,6 @@ export const mainNavItems = [
     title: "Completed",
     url: "/completed",
     icon: CheckSquare,
-  },
-]
-
-export const projectItems = [
-  {
-    title: "Personal",
-    url: "/projects/personal",
-    color: "bg-blue-500",
-    count: 8,
-  },
-  {
-    title: "Work",
-    url: "/projects/work",
-    color: "bg-green-500",
-    count: 15,
-  },
-  {
-    title: "Shopping",
-    url: "/projects/shopping",
-    color: "bg-purple-500",
-    count: 3,
   },
 ]
 
@@ -69,10 +46,5 @@ export const utilityNavItems = [
     title: "Filters & Labels",
     url: "/filters",
     icon: Filter,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
   },
 ]
