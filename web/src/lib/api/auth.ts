@@ -1,4 +1,4 @@
-import { FetchWithOutAuth, type Response } from "@/lib/api";
+import { FetchWithOutAuth, FetchWithAuth, type Response } from "@/lib/api";
 import { type User } from "@/types/auth";
 
 import { useAuthStore } from "@/store/useAuthStore";
@@ -23,7 +23,7 @@ export const login = async (name: string): Promise<Response<{ user: User }>> => 
 
 // 사용자 로그아웃 요청
 export const logout = async (): Promise<Response<void>> => {
-  const res = await FetchWithOutAuth("auth/logout", {
+  const res = await FetchWithAuth("auth/logout", {
     method: "GET",
   });
 
@@ -38,7 +38,7 @@ export const logout = async (): Promise<Response<void>> => {
 
 // 사용자 정보 요청 (프로필)
 export const ping = async (): Promise<Response<null>> => {
-  await FetchWithOutAuth("auth", {
+  await FetchWithAuth("auth", {
     method: "GET",
   });
 
