@@ -8,7 +8,6 @@ import Navbar from "@/components/layouts/navbar"
 import { ping } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/useAuthStore"
 
-
 type ProtectedRouteProps = {
   children: React.ReactNode
 }

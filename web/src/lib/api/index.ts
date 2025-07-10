@@ -90,8 +90,6 @@ export const FetchWithAuthFormData = async (url: string, options: fetchOptions =
  * 로그인 페이지로 이동하고 재로그인 시에 기존 페이지로 돌아갈 수 있도록
  */
 const handleTokenExpiration = () => {
-	logout()
-
 	const currentPath = window.location.pathname
 	if (currentPath !== "/login") {
 		sessionStorage.setItem("redirectAfterLogin", currentPath)

@@ -11,18 +11,17 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckSquare, Loader2 } from "lucide-react"
 
-import { login, logout } from "@/lib/api/auth"
+import { login } from "@/lib/api/auth"
 
 export default function LoginPage() {
+  const navigate = useNavigate()
+
   const [name, setName] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
 
+  // 로그인 페이지 접근 시에 세션 만료 여부 확인
   useEffect(() => {
-    logout()
-
-    // URL에서 expired 파라미터 확인
     const queryParams = new URLSearchParams(location.search)
     const isExpired = queryParams.get("expired") === "true"
     if (isExpired) {
