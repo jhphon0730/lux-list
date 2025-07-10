@@ -37,3 +37,13 @@ export const logout = async (): Promise<Response<void>> => {
 }
 
 // 사용자 정보 요청 (프로필)
+export const ping = async (): Promise<Response<null>> => {
+  await FetchWithOutAuth("auth", {
+    method: "GET",
+  });
+
+  return {
+    data: null,
+    error: null,
+  }
+}

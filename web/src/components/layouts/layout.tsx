@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import Sidebar from "@/components/layouts/sidebar"
 import Navbar from "@/components/layouts/navbar"
 
-import {} from "@/lib/api/auth";
+import { ping } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/useAuthStore"
 
 
@@ -27,7 +27,7 @@ export default function Layout() {
   const location = useLocation()
 
   useEffect(() => {
-    
+    ping()
   }, [location.pathname])
 
   return (
