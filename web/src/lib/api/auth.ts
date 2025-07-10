@@ -11,12 +11,12 @@ export const login = async (name: string): Promise<Response<{ user: User }>> => 
   });
 
   // 로그인 성공 시 사용자 정보를 상태에 저장
-  if (res.data && res.data.user) {
-    useAuthStore.getState().setUser(res.data.user);
+  if (res && res.user) {
+    useAuthStore.getState().setUser(res.user);
   }
 
   return {
-    data: res.data,
+    data: res,
     error: res.error,
   }
 }
@@ -35,3 +35,5 @@ export const logout = async (): Promise<Response<void>> => {
     error: res.error,
   }
 }
+
+// 사용자 정보 요청 (프로필)

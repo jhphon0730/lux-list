@@ -48,10 +48,10 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const response = await login(name.trim())
+      const res = await login(name.trim())
 
-      if (response.error) {
-        setError(response.error)
+      if (res.error) {
+        setError(res.error)
       } else {
         // 로그인 성공 시 리디렉션
         const redirectPath = sessionStorage.getItem("redirectAfterLogin") || "/"
