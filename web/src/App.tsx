@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+
 import Layout from "@/components/layouts/layout"
+import LoginPage from "@/pages/login"
+
 
 // 예시 페이지 컴포넌트들
 function InboxPage() {
@@ -55,6 +58,8 @@ export default function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        {/* 기본 레이아웃을 사용하는 라우트들 */}
         <Route path="/" element={<Layout />}>
           <Route index element={<InboxPage />} />
           <Route path="inbox" element={<InboxPage />} />

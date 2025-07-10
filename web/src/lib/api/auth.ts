@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 // 사용자 로그인 요청
 export const login = async (name: string): Promise<Response<{ user: User }>> => {
-  const res = await FetchWithOutAuth("/auth/login", {
+  const res = await FetchWithOutAuth("auth/login", {
     method: "POST",
     body: JSON.stringify({ name }),
   });
@@ -23,7 +23,7 @@ export const login = async (name: string): Promise<Response<{ user: User }>> => 
 
 // 사용자 로그아웃 요청
 export const logout = async (): Promise<Response<void>> => {
-  const res = await FetchWithOutAuth("/auth/logout", {
+  const res = await FetchWithOutAuth("auth/logout", {
     method: "GET",
   });
 
