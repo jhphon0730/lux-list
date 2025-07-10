@@ -22,6 +22,7 @@ const defaultHeaders = {
 export const FetchWithOutAuth = async (url: string, options: fetchOptions = {}) => {
 	const mergeOptions = {
 		...options,
+		credentials: "include" as RequestCredentials,
 		headers: {
 			...defaultHeaders,
 			...options.headers,
@@ -92,10 +93,10 @@ const handleTokenExpiration = () => {
 	logout()
 
 	const currentPath = window.location.pathname
-	if (currentPath !== "/signin") {
+	if (currentPath !== "/login") {
 		sessionStorage.setItem("redirectAfterLogin", currentPath)
 	}
 
 	// SPA 환경에서는 replace가 더 자연스럽게 동작
-	window.location.replace("/signin?expired=true")
+	window.location.replace("/login?expired=true")
 }

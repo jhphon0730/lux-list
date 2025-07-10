@@ -53,7 +53,7 @@ func NewServer(Port string, ctx context.Context) Server {
 func (s *server) Run() error {
 	// CORS 설정
 	s.Engine.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://192.168.0.5:3000", "http://localhost:3000", "*"},
+		AllowOrigins:     []string{"http://192.168.0.5:3000", "http://localhost:3000", "http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
