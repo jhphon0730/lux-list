@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
 	"lux-list/internal/middleware"
@@ -30,7 +29,7 @@ type authController struct {
 // RegisterRoutes는 인증 관련 라우트를 등록하는 함수
 func RegisterAuthRoutes(router *gin.RouterGroup, authController AuthController) {
 	router.POST("/login", authController.Login)
-	router.GET("/logout", middleware.AuthMiddleware(), authController.Logout)
+	router.GET("/logout", authController.Logout)
 	router.GET("", middleware.AuthMiddleware(), authController.Profile)
 }
 
@@ -102,7 +101,6 @@ func (c *authController) Logout(ctx *gin.Context) {
 	session.Clear()
 	_ = session.Save()
 
-	fmt.Print(userID)
 	if err := redis.DeleteAuthSession(ctx, userID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session in Redis"})
 		return
