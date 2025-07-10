@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckSquare, Loader2 } from "lucide-react"
 
-import { login } from "@/lib/api/auth"
+import { login, logout } from "@/lib/api/auth"
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -19,6 +19,11 @@ export default function LoginPage() {
   const [name, setName] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
+  // 페이지 접근 시에는 항상 로그아웃 처리
+  useEffect(() => {
+    logout()
+  }, [])
 
   // 로그인 페이지 접근 시에 세션 만료 여부 확인
   useEffect(() => {
